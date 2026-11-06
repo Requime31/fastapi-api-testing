@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{base_url}}/items/1"
+method: PUT
+body:
+  type: json
+  content: |-
+    {
+      "title": "Hacked Item",
+      "description": "Trying to modify another user's item"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJleHAiOjE3OTM4OTIyMjZ9.kGzb3lEviUszkLNPG6o7HfWiEMAp-abkWwzPIepcW0o
+order: 12000

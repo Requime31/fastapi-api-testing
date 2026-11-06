@@ -1,0 +1,4 @@
+name: Fast API Local
+values:
+  - key: base_url
+    value: ''

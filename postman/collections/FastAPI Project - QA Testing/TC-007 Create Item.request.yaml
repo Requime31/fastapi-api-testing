@@ -1,0 +1,37 @@
+$kind: http-request
+url: "{{base_url}}/items/"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "title": "QA Test Item",
+      "description": "Created during manual API testing"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE3OTM4OTE5NzZ9.sAxw_CGNLue5wvL7ssbDnHOPmc1VTV2nU8jM0tP-AC0
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test("Item has correct title", function () {
+          const response = pm.response.json();
+          pm.expect(response.title).to.eql("QA Test Item");
+      });
+
+      pm.test("Item has correct description", function () {
+          const response = pm.response.json();
+          pm.expect(response.description).to.eql("Created during manual API testing");
+      });
+
+      pm.test("Item has an ID", function () {
+          const response = pm.response.json();
+          pm.expect(response.id).to.exist;
+      });
+    language: text/javascript
+order: 9000

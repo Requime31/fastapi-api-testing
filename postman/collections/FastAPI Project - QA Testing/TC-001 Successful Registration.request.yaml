@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{base_url}}/users/register"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "email": "qa.test2@example.com",
+      "password": "TestPassword123",
+      "phone": "+31612345678"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test("Response contains success message", function () {
+          const response = pm.response.json();
+
+          pm.expect(response.message).to.eql("User created");
+      });
+    language: text/javascript
+order: 2000

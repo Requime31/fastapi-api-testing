@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{base_url}}/users/register"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "email": "qa.test2@example.com",
+      "password": "TestPassword123",
+      "phone": "+31612345678"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 400", function () {
+          pm.response.to.have.status(400);
+      });
+
+      pm.test("Error message is correct", function () {
+          const response = pm.response.json();
+
+          pm.expect(response.detail).to.eql("User already exists");
+      });
+    language: text/javascript
+order: 3000

@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{base_url}}/users/register"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "email": "invalid-email",
+      "password": "TestPassword123",
+      "phone": "+31612345678"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 422", function () {
+          pm.response.to.have.status(422);
+      });
+
+      pm.test("Validation error is returned", function () {
+          const response = pm.response.json();
+
+          pm.expect(response.detail).to.be.an("array");
+      });
+    language: text/javascript
+order: 4000
