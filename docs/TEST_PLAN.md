@@ -240,11 +240,23 @@ Workflow типа **Баг** в Jira (интерфейс Jira на русско�
 
 | Тип в Jira | Что это | Пример |
 |---|---|---|
+| Эпик | Тестовый цикл | `FAT-1` Тестирование API v1.7.0 — Test cycle 1 |
+| Задача (Task) | Подготовка / прогон чек-листа / отчёт | `FAT-3` Прогон CL-01 Auth |
 | Баг (Bug) | Дефект | `FAT-12` Пагинация: `500` при `limit=0` |
-| Задача (Task) | Прогон чек-листа / регресс / отчёт | `FAT-1` Прогон CL-01 Auth |
 | Задача + метка `question` | Вопрос к разработчику по пунктам ❓ | `FAT-20` Должен ли `/health` возвращать `503` при недоступной БД? |
 
-Поля бага: **Severity** (кастомное, Blocker…Trivial), **Priority**, **Components** (`Auth`, `Items`, `Rate Limit`, `Health/Logs/CORS`, `API Docs`), **Affects versions** (`v1.7.0`), **Environment**, **Labels** (ID проверки, например `CL-02_PAG-16`).
+Все задачи цикла — дочерние к эпику цикла и находятся в спринте **Test cycle 1 — v1.7.0** (09.11–20.11.2026). Релиз `v1.7.0` заведён в проекте.
+
+| Поле бага | Значение |
+|---|---|
+| Severity | Кастомное поле: Blocker / Critical / Major / Minor / Trivial |
+| Priority | Highest / High / Medium / Low / Lowest |
+| Родитель | Эпик цикла (`FAT-1`) |
+| Метки | Компонент: `component-auth`, `component-items`, `component-rate-limit`, `component-health-logs-cors`, `component-api-docs`; версия `v1.7.0`; ID проверки, например `CL-02_PAG-16` |
+| Описание | Разделы по шаблону 7.5, включая **Окружение** (Local (Docker), коммит) |
+| Веб-ссылка | «mirrored in» → зеркальный GitHub issue |
+
+> Проект team-managed: компоненты и Affects versions ведутся метками, окружение — разделом описания.
 
 **GitHub Issues — публичное зеркало.** Jira закрыта для посторонних, поэтому каждая Jira-задача дублируется в Issues репозитория:
 
@@ -252,14 +264,14 @@ Workflow типа **Баг** в Jira (интерфейс Jira на русско�
 |---|---|
 | Ключ и summary | Заголовок `[FAT-12] Пагинация: 500 при limit=0` |
 | Описание бага | Тело issue по шаблону + ссылка на Jira |
-| Тип | Метка `bug` / `task` / `question` |
+| Тип | Метка `epic` / `task` / `bug` / `question` |
 | Severity | Метка `severity:*` |
-| Component | Метка `component:*` |
+| Метка `component-*` | Метка `component:*` |
 | Test cycle (sprint) | Milestone `Test cycle 1 — v1.7.0` |
 | Статус «Готово» / «Отклонено» | Issue закрыт (completed / not planned) с комментарием |
 | Прочие статусы | Issue открыт; переходы дублируются комментарием |
 
-В Jira-задаче в комментарии указывается ссылка на зеркальный GitHub issue. Коммиты, связанные с задачей, содержат её ключ: `docs: add bug report FAT-12`.
+Номера совпадают: `FAT-N` в Jira ↔ `#N` в GitHub (задачи заводятся парами по порядку). В Jira-задаче есть веб-ссылка на зеркальный issue, в issue — ссылка на Jira. Коммиты, связанные с задачей, содержат её ключ: `docs: add bug report FAT-12`.
 
 ### 7.5 Шаблон баг-репорта
 - **ID / Заголовок** — Jira-ключ; что, где, при каких условиях;
