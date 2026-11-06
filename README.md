@@ -16,7 +16,7 @@
 | Планирование | [Test Plan](docs/TEST_PLAN.md) | ✅ Готов |
 | Тест-дизайн | [Чек-листы](docs/checklists/) — 381 проверка | ✅ Готовы |
 | Выполнение | Прогон чек-листов, Postman-коллекция | ⏳ В процессе |
-| Дефекты | [Баг-репорты в Issues](../../issues?q=label%3Abug) | ⏳ |
+| Дефекты | Jira `FAT` → зеркало в [Issues](../../issues?q=label%3Abug) | ⏳ |
 | Отчётность | Test Summary Report | ⏳ |
 
 ---
@@ -45,8 +45,18 @@
 ### Postman
 Коллекция `FastAPI Project - QA Testing` и environment `Fast API Local` — в папке [`postman/`](postman/), в формате Postman Local View (подключается через Postman → Workspace → Local View, файл [`.postman/resources.yaml`](.postman/resources.yaml)).
 
-### Баг-репорты
-Заводятся в [Issues](../../issues) по шаблону **Bug report** с метками `severity:blocker` … `severity:trivial`.
+### Трекинг: Jira + GitHub Issues
+Работа ведётся в **Jira** (проект `FAT`), как на реальном проекте: баги с полями Severity / Priority / Components / Affects version, задачи на прогон чек-листов, вопросы к разработчику, workflow `To Do → In Progress → Fixed → Re-test → Done`.
+
+Jira закрыта для посторонних, поэтому каждая задача зеркалируется в [Issues](../../issues) этого репозитория с тем же ключом в заголовке (`[FAT-12] ...`), метками `bug` / `task` / `question`, `severity:*`, `component:*` и milestone тестового цикла. Схема синхронизации — в [Test Plan, раздел 7.4](docs/TEST_PLAN.md#74-трекинг-jira--github-issues).
+
+| Что посмотреть | Ссылка |
+|---|---|
+| Все баги | [label:bug](../../issues?q=label%3Abug) |
+| Открытые Critical / Blocker | [severity:critical, severity:blocker](../../issues?q=is%3Aopen+label%3Aseverity%3Acritical%2Cseverity%3Ablocker) |
+| Задачи на прогон | [label:task](../../issues?q=label%3Atask) |
+| Вопросы к разработчику | [label:question](../../issues?q=label%3Aquestion) |
+| Ход тестового цикла | [Milestones](../../milestones) |
 
 ---
 
@@ -97,7 +107,7 @@ docker-compose run api pytest tests/ -v
 
 ## Инструменты
 
-Postman · Swagger UI · psql · Docker Compose · curl · jwt.io · pytest · GitHub Issues
+Jira · Postman · Swagger UI · psql · Docker Compose · curl · jwt.io · pytest · GitHub Issues
 
 ---
 

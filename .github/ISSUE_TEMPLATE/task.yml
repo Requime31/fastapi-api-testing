@@ -1,0 +1,37 @@
+name: Task / Question
+description: Зеркало Jira-задачи — прогон чек-листа, регресс, отчёт или вопрос к разработчику
+title: "[FAT-N] <Краткое описание>"
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Зеркало задачи из Jira. Для вопроса к разработчику замените метку `task` на `question`.
+
+  - type: input
+    id: jira
+    attributes:
+      label: Jira
+      description: Ключ и ссылка на задачу в Jira
+      placeholder: "FAT-1 — https://romanshevchenko316.atlassian.net/browse/FAT-1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Описание
+      placeholder: |
+        Прогон чек-листа CL-01 Auth (118 проверок) на Local (Docker), коммит 660708b.
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: Критерий готовности
+      placeholder: |
+        - все проверки имеют статус
+        - найденные дефекты заведены в Jira и зеркалированы сюда
+    validations:
+      required: false

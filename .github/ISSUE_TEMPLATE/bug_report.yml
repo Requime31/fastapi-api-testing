@@ -1,8 +1,23 @@
 name: Bug report
 description: Дефект, найденный при тестировании API
-title: "[BUG] <Эндпоинт>: <что не так> при <условии>"
+title: "[FAT-N] <Эндпоинт>: <что не так> при <условии>"
 labels: ["bug"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Зеркало бага из Jira. Сначала заведите баг в Jira (проект FAT), затем перенесите сюда ключ и описание.
+        Добавьте метки `severity:*` и `component:*`, укажите milestone тестового цикла.
+
+  - type: input
+    id: jira
+    attributes:
+      label: Jira
+      description: Ключ и ссылка на задачу в Jira
+      placeholder: "FAT-12 — https://romanshevchenko316.atlassian.net/browse/FAT-12"
+    validations:
+      required: true
+
   - type: input
     id: check
     attributes:

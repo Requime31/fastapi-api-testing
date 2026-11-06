@@ -166,7 +166,8 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 | Docker Compose | Развёртывание стенда, просмотр логов (`docker-compose logs api`) |
 | pytest + pytest-cov | Существующие автотесты, регресс |
 | jwt.io | Анализ содержимого JWT |
-| GitHub Issues (шаблон `Bug report`, метки `severity:*`) | Учёт дефектов |
+| **Jira** (проект `FAT`) | Основной трекер: баги, задачи на прогон, вопросы к разработчику, workflow дефектов |
+| GitHub Issues | Публичное зеркало Jira-задач в репозитории (см. 7.4) |
 | Google Sheets / Markdown | Чек-листы и тест-кейсы |
 
 ---
@@ -214,10 +215,55 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 ### 7.2 Priority: High / Medium / Low — определяется совместно с разработчиком.
 
 ### 7.3 Жизненный цикл дефекта
-`New → Open → In Progress → Fixed → Re-test → Closed` (или `Reopened`, `Rejected`, `Duplicate`, `Won't fix`).
 
-### 7.4 Шаблон баг-репорта
-- **ID / Заголовок** — что, где, при каких условиях;
+Workflow типа **Bug** в Jira:
+
+```
+To Do ──► In Progress ──► Fixed ──► Re-test ──► Done
+  │            ▲                       │
+  │            └────── Reopened ───────┘   (re-test не пройден)
+  └──► Rejected                            (не баг / дубликат / won't fix — причина в комментарии)
+```
+
+| Статус Jira | Классический статус | Кто переводит |
+|---|---|---|
+| To Do | New / Open | QA при заведении |
+| In Progress | In Progress | Разработчик |
+| Fixed | Fixed | Разработчик (с указанием коммита) |
+| Re-test | Re-test | QA берёт на проверку |
+| Done | Closed | QA после успешной проверки |
+| Rejected | Rejected / Duplicate / Won't fix | Разработчик или QA, с обоснованием |
+
+### 7.4 Трекинг: Jira + GitHub Issues
+
+**Jira — источник истины.** Любая задача сначала заводится в Jira (проект `FAT`), статусы меняются только там.
+
+| Тип в Jira | Что это | Пример |
+|---|---|---|
+| Bug | Дефект | `FAT-12` Пагинация: `500` при `limit=0` |
+| Task | Прогон чек-листа / регресс / отчёт | `FAT-1` Прогон CL-01 Auth |
+| Task + метка `question` | Вопрос к разработчику по пунктам ❓ | `FAT-20` Должен ли `/health` возвращать `503` при недоступной БД? |
+
+Поля бага: **Severity** (кастомное, Blocker…Trivial), **Priority**, **Components** (`Auth`, `Items`, `Rate Limit`, `Health/Logs/CORS`, `API Docs`), **Affects versions** (`v1.7.0`), **Environment**, **Labels** (ID проверки, например `CL-02_PAG-16`).
+
+**GitHub Issues — публичное зеркало.** Jira закрыта для посторонних, поэтому каждая Jira-задача дублируется в Issues репозитория:
+
+| Jira | GitHub Issues |
+|---|---|
+| Ключ и summary | Заголовок `[FAT-12] Пагинация: 500 при limit=0` |
+| Описание бага | Тело issue по шаблону + ссылка на Jira |
+| Тип | Метка `bug` / `task` / `question` |
+| Severity | Метка `severity:*` |
+| Component | Метка `component:*` |
+| Test cycle (sprint) | Milestone `Test cycle 1 — v1.7.0` |
+| Статус Done / Rejected | Issue закрыт (completed / not planned) с комментарием |
+| Прочие статусы | Issue открыт; переходы дублируются комментарием |
+
+В Jira-задаче в комментарии указывается ссылка на зеркальный GitHub issue. Коммиты, связанные с задачей, содержат её ключ: `docs: add bug report FAT-12`.
+
+### 7.5 Шаблон баг-репорта
+- **ID / Заголовок** — Jira-ключ; что, где, при каких условиях;
+- **Проверка** — ID из чек-листа (например, `CL-02 / PAG-16`);
 - **Окружение** — Local (Docker), коммит;
 - **Предусловия**;
 - **Шаги воспроизведения** (с запросом: метод, URL, headers, body — или cURL);
