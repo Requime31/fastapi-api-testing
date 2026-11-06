@@ -46,7 +46,7 @@
 Коллекция `FastAPI Project - QA Testing` и environment `Fast API Local` — в папке [`postman/`](postman/), в формате Postman Local View (подключается через Postman → Workspace → Local View, файл [`.postman/resources.yaml`](.postman/resources.yaml)).
 
 ### Трекинг: Jira + GitHub Issues
-Работа ведётся в **Jira** (проект `FAT`), как на реальном проекте: баги с полями Severity / Priority / Components / Affects version, задачи на прогон чек-листов, вопросы к разработчику, workflow `To Do → In Progress → Fixed → Re-test → Done`.
+Работа ведётся в **Jira** (проект `FAT`), как на реальном проекте: баги с полями Severity / Priority / Components / Affects version, задачи на прогон чек-листов, вопросы к разработчику, workflow `К выполнению → В работе → Исправлено → Повторная проверка → Готово`.
 
 Jira закрыта для посторонних, поэтому каждая задача зеркалируется в [Issues](../../issues) этого репозитория с тем же ключом в заголовке (`[FAT-12] ...`), метками `bug` / `task` / `question`, `severity:*`, `component:*` и milestone тестового цикла. Схема синхронизации — в [Test Plan, раздел 7.4](docs/TEST_PLAN.md#74-трекинг-jira--github-issues).
 

@@ -216,23 +216,23 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 
 ### 7.3 Жизненный цикл дефекта
 
-Workflow типа **Bug** в Jira:
+Workflow типа **Баг** в Jira (интерфейс Jira на русском):
 
 ```
-To Do ──► In Progress ──► Fixed ──► Re-test ──► Done
-  │            ▲                       │
-  │            └────── Reopened ───────┘   (re-test не пройден)
-  └──► Rejected                            (не баг / дубликат / won't fix — причина в комментарии)
+К выполнению ──► В работе ──► Исправлено ──► Повторная проверка ──► Готово
+     │              ▲                                │
+     │              └────────── Reopened ────────────┘   (повторная проверка не пройдена)
+     └──► Отклонено                                      (не баг / дубликат / won't fix — причина в комментарии)
 ```
 
 | Статус Jira | Классический статус | Кто переводит |
 |---|---|---|
-| To Do | New / Open | QA при заведении |
-| In Progress | In Progress | Разработчик |
-| Fixed | Fixed | Разработчик (с указанием коммита) |
-| Re-test | Re-test | QA берёт на проверку |
-| Done | Closed | QA после успешной проверки |
-| Rejected | Rejected / Duplicate / Won't fix | Разработчик или QA, с обоснованием |
+| К выполнению | New / Open | QA при заведении |
+| В работе | In Progress | Разработчик |
+| Исправлено | Fixed | Разработчик (с указанием коммита) |
+| Повторная проверка | Re-test | QA берёт на проверку |
+| Готово | Closed | QA после успешной проверки |
+| Отклонено | Rejected / Duplicate / Won't fix | Разработчик или QA, с обоснованием |
 
 ### 7.4 Трекинг: Jira + GitHub Issues
 
@@ -240,9 +240,9 @@ To Do ──► In Progress ──► Fixed ──► Re-test ──► Done
 
 | Тип в Jira | Что это | Пример |
 |---|---|---|
-| Bug | Дефект | `FAT-12` Пагинация: `500` при `limit=0` |
-| Task | Прогон чек-листа / регресс / отчёт | `FAT-1` Прогон CL-01 Auth |
-| Task + метка `question` | Вопрос к разработчику по пунктам ❓ | `FAT-20` Должен ли `/health` возвращать `503` при недоступной БД? |
+| Баг (Bug) | Дефект | `FAT-12` Пагинация: `500` при `limit=0` |
+| Задача (Task) | Прогон чек-листа / регресс / отчёт | `FAT-1` Прогон CL-01 Auth |
+| Задача + метка `question` | Вопрос к разработчику по пунктам ❓ | `FAT-20` Должен ли `/health` возвращать `503` при недоступной БД? |
 
 Поля бага: **Severity** (кастомное, Blocker…Trivial), **Priority**, **Components** (`Auth`, `Items`, `Rate Limit`, `Health/Logs/CORS`, `API Docs`), **Affects versions** (`v1.7.0`), **Environment**, **Labels** (ID проверки, например `CL-02_PAG-16`).
 
@@ -256,7 +256,7 @@ To Do ──► In Progress ──► Fixed ──► Re-test ──► Done
 | Severity | Метка `severity:*` |
 | Component | Метка `component:*` |
 | Test cycle (sprint) | Milestone `Test cycle 1 — v1.7.0` |
-| Статус Done / Rejected | Issue закрыт (completed / not planned) с комментарием |
+| Статус «Готово» / «Отклонено» | Issue закрыт (completed / not planned) с комментарием |
 | Прочие статусы | Issue открыт; переходы дублируются комментарием |
 
 В Jira-задаче в комментарии указывается ссылка на зеркальный GitHub issue. Коммиты, связанные с задачей, содержат её ключ: `docs: add bug report FAT-12`.
