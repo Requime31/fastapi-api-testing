@@ -1,0 +1,91 @@
+name: Bug report
+description: Дефект, найденный при тестировании API
+title: "[BUG] <Эндпоинт>: <что не так> при <условии>"
+labels: ["bug"]
+body:
+  - type: input
+    id: check
+    attributes:
+      label: Проверка из чек-листа
+      description: ID проверки, на которой найден дефект
+      placeholder: "CL-02 / PAG-16"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Шкала из Test Plan, раздел 7.1
+      options:
+        - Blocker
+        - Critical
+        - Major
+        - Minor
+        - Trivial
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Окружение
+      placeholder: "Local (Docker), коммит 660708b, Postman 11"
+    validations:
+      required: true
+
+  - type: textarea
+    id: preconditions
+    attributes:
+      label: Предусловия
+      placeholder: |
+        1. Пользователь User A зарегистрирован и залогинен
+        2. В БД 25 items
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения
+      description: Метод, URL, заголовки, тело. Удобнее всего — cURL
+      placeholder: |
+        1. Отправить запрос:
+           curl -X GET "http://localhost:8000/items/all?page=0" -H "Authorization: Bearer <token>"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Фактический результат
+      description: Статус-код и тело ответа, при необходимости — состояние БД и логи
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемый результат
+      description: Со ссылкой на источник требования (README / Swagger / RFC / общепринятая практика)
+    validations:
+      required: true
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Вложения и дополнительная информация
+      description: Скриншоты Postman, логи контейнера, ссылка на строку кода
+    validations:
+      required: false

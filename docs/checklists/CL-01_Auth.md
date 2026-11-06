@@ -199,7 +199,7 @@
 | SEC-08 | Email (PII) в логах | ❓ Email записывается в `logs.message` в открытом виде. Зафиксировать как замечание | L | | R-12 |
 | SEC-09 | `Content-Type` ответов | `application/json` для всех эндпоинтов | L | | |
 | SEC-10 | Коды ответов соответствуют Swagger (`/openapi.json`) | Каждый задокументированный код воспроизводим; недокументированные коды (`403`, `422`) — зафиксировать | M | | R-06 |
-| SEC-11 | Cookie по HTTP (localhost) | ❓ Cookie с флагом `Secure` по HTTP: сохраняется ли он и отправляется ли при refresh (Postman / браузер)? Сравнить с Railway (HTTPS) | M | | R-09 |
+| SEC-11 | Cookie по HTTP (localhost) | ❓ Cookie с флагом `Secure` по HTTP: сохраняется ли он и отправляется ли при refresh (Postman / браузер)? Поведение по HTTPS не проверяется (нет HTTPS-стенда) — отметить как ограничение | M | | R-09 |
 
 ---
 

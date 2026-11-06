@@ -1,4 +1,4 @@
-#ci.yml 
+#ci.yml
 name: CI
 
 on:
@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      # Test-only key for the isolated SQLite run — not used anywhere else
+      SECRET_KEY: ci-test-secret-key
       ALGORITHM: HS256
       DATABASE_URL: sqlite:///./test.db
 
@@ -31,20 +32,3 @@ jobs:
 
       - name: Run tests
         run: pytest tests/ -v --cov=app --cov-report=term-missing
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.2
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        run: railway up --detach --service fastapi-project
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

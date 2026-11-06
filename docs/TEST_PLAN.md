@@ -17,7 +17,7 @@
 Определить объём, подход, ресурсы, окружения, критерии и график тестирования REST API проекта FastAPI Project. Документ служит основой для разработки чек-листов, тест-кейсов и отчёта о тестировании.
 
 ### 1.2 Описание продукта
-Backend-сервис на **FastAPI + PostgreSQL**, развёрнутый в Docker и на Railway. Архитектура:
+Backend-сервис на **FastAPI + PostgreSQL**, запускаемый в Docker. Исходный код — [nisanMan/fastapi-project](https://github.com/nisanMan/fastapi-project); тестируется локальная копия. Архитектура:
 
 ```
 Request → SlowAPI (rate limit) → CORS → Router → Service → Repository → DB
@@ -75,8 +75,9 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 | Версионирование API, метрики | Перенесено на v2.0 |
 | Redis, Nginx, фоновые задачи | Не реализовано (v2.0) |
 | UI / frontend | Отсутствует, проект — только API |
-| Полноценное нагрузочное тестирование | Нет выделенного стенда; на prod (Railway) запрещено. Допускается лёгкая проверка rate limit на локальном стенде |
-| Инфраструктура Railway, CI/CD pipeline | Зона ответственности DevOps; проверяется только факт успешного деплоя |
+| Полноценное нагрузочное тестирование | Нет выделенного стенда. Допускается лёгкая проверка rate limit на локальном стенде |
+| Production-окружение автора (Railway) | Чужой сервис: тестирование без разрешения владельца недопустимо. Всё тестирование — только на локальном стенде |
+| CI/CD pipeline | Зона ответственности DevOps; проверяется только, что автотесты в CI проходят |
 | Внутренние библиотеки (passlib, python-jose, slowapi) | Сторонний код, тестируется только интеграция с ним |
 
 ---
@@ -128,9 +129,9 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 | R-06 | Коды ответов | Соответствие задокументированным кодам (`201`, `204`, `400`, `401`, `403`, `404`, `422`, `429`); есть ли тело у `204` | Medium |
 | R-07 | User enumeration | Различаются ли ответы логина для несуществующего пользователя и неверного пароля? | Medium |
 | R-08 | Жизненный цикл токенов | Работает ли access token после logout / logout-all? Что делает logout с невалидным cookie? Повторное использование старого refresh-токена | High |
-| R-09 | Cookie | Атрибуты `HttpOnly`, `Secure`, `SameSite`, `Max-Age`; поведение по HTTP (localhost) и HTTPS (Railway) | Medium |
+| R-09 | Cookie | Атрибуты `HttpOnly`, `Secure`, `SameSite`, `Max-Age`; поведение по HTTP (localhost); HTTPS-стенда нет — ограничение | Medium |
 | R-10 | Неактивные пользователи | Поле `is_active` в модели — влияет ли на логин и доступ? | Low |
-| R-11 | Rate limiting за прокси | Лимит считается по IP: корректно ли на Railway (за прокси) — нет ли общего лимита на всех клиентов? | Medium |
+| R-11 | Rate limiting за прокси | Лимит считается по IP клиента: при развёртывании за reverse proxy все клиенты могут получить общий лимит (анализ кода + проверка в Docker) | Medium |
 | R-12 | Логи | Попадают ли персональные данные (email) в логи; создаются ли записи для всех ключевых событий | Medium |
 | R-13 | Регистр email | `User@Mail.com` и `user@mail.com` — один пользователь или два? | Medium |
 | R-14 | Поле `phone` | Отсутствие валидации формата | Low |
@@ -143,7 +144,6 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 | Окружение | URL | Назначение | Ограничения |
 |---|---|---|---|
 | **Local (Docker)** — основное | `http://localhost:8000` | Все виды тестирования, работа с БД | — |
-| Production (Railway) | `https://fastapi-project-production-4bdc.up.railway.app` | Только smoke после деплоя | Не создавать массово данные, не проверять rate limit, не проводить security-атаки |
 | CI (GitHub Actions) | — | Автотесты pytest на SQLite | Нет PostgreSQL — возможны расхождения поведения SQLite vs PostgreSQL |
 
 **Конфигурация локального стенда:** Docker Compose (`api` + `postgres:15`), Python 3.11, переменные из `.env`. Для тестирования истечения токенов допускается временно уменьшить `ACCESS_TOKEN_EXPIRE_MINUTES` в `.env`.
@@ -166,7 +166,7 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 | Docker Compose | Развёртывание стенда, просмотр логов (`docker-compose logs api`) |
 | pytest + pytest-cov | Существующие автотесты, регресс |
 | jwt.io | Анализ содержимого JWT |
-| Баг-трекер (GitHub Issues / Jira) | Учёт дефектов |
+| GitHub Issues (шаблон `Bug report`, метки `severity:*`) | Учёт дефектов |
 | Google Sheets / Markdown | Чек-листы и тест-кейсы |
 
 ---
@@ -218,7 +218,7 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 
 ### 7.4 Шаблон баг-репорта
 - **ID / Заголовок** — что, где, при каких условиях;
-- **Окружение** — Local / Railway, версия, коммит;
+- **Окружение** — Local (Docker), коммит;
 - **Предусловия**;
 - **Шаги воспроизведения** (с запросом: метод, URL, headers, body — или cURL);
 - **Фактический результат** (статус + тело ответа);
@@ -263,8 +263,8 @@ Request → SlowAPI (rate limit) → CORS → Router → Service → Repository 
 |---|---|---|---|
 | Нет формального ТЗ — неясен ожидаемый результат | Высокая | Высокое | Опираться на README / Swagger / общепринятые практики REST; спорные моменты фиксировать как вопросы к разработчику |
 | Rate limiting мешает выполнению тестов | Высокая | Среднее | Увеличить лимиты в `.env` для функционального тестирования; проверять rate limit отдельно с дефолтными значениями |
-| Тестирование на prod повредит данные | Средняя | Высокое | Основное тестирование — только локально; на Railway — только smoke |
-| Различие SQLite (CI) и PostgreSQL (prod) | Средняя | Среднее | Ручные проверки выполнять на PostgreSQL |
+| Нет HTTPS-стенда — поведение `Secure`-cookie и прокси не проверить полностью | Высокая | Среднее | Проверить на HTTP, остальное — анализом кода; зафиксировать как ограничение в отчёте |
+| Различие SQLite (CI) и PostgreSQL (стенд) | Средняя | Среднее | Ручные проверки выполнять на PostgreSQL |
 | Истечение токенов (30 мин / 7 дней) сложно проверить | Высокая | Низкое | Временно уменьшить TTL в `.env`; для refresh — изменить `expires_at` в БД |
 | Cookie с флагом `Secure` по HTTP | Средняя | Среднее | Проверить поведение Postman / браузера на localhost и HTTPS отдельно |
 
