@@ -33,22 +33,22 @@
 | CRT-01 | Create with valid `title` and `description` | `201`; body contains `id`, `title`, `description` matching the request | ✅ | |
 | CRT-02 | DB: record created correctly | `owner_id` = User A id, `is_deleted = false`, `created_at` and `updated_at` set (UTC, ≈ now) | ✅ | |
 | CRT-03 | `id` is assigned automatically and is unique | Two consecutive creates → different `id`, the second is greater | ✅ | |
-| CRT-04 | Response fields | ❓ The response matches the `ItemResponse` schema (`id`, `title`, `description`). Record if internal fields are returned (`owner_id`, `is_deleted`, `created_at`, …) | ❌ | Actual: response fields: ['created_at', 'description', 'id', 'is_deleted', 'owner_id', 'title', 'updated_at'] → **D-17** R-05 |
+| CRT-04 | Response fields | ❓ The response matches the `ItemResponse` schema (`id`, `title`, `description`). Record if internal fields are returned (`owner_id`, `is_deleted`, `created_at`, …) | ❌ | Actual: response fields: ['created_at', 'description', 'id', 'is_deleted', 'owner_id', 'title', 'updated_at'] → **[FAT-28](https://github.com/Requime31/fastapi-api-testing/issues/28)** R-05 |
 | CRT-05 | The created item appears in `GET /items/` | The item is in User A's list | ✅ | |
 | CRT-06 | Two items with the same `title` | `201` both times (uniqueness not required) | ✅ | |
 | CRT-07 | Unicode and emoji: `"Заметка 📝"`, `"日本語"` | `201`; strings stored without distortion in the response and in the DB | ✅ | |
 | CRT-08 | Special characters: `"<>&\"'/\\%"` | `201`; stored as is, without escaping or truncation | ✅ | |
 | CRT-09 | 1-character string in both fields | `201` | ✅ | |
-| CRT-10 | Long strings (1,000 and 10,000 characters) | ❓ `201` or `422` with a clear limit; no `500` | ✅ | no length limit: 10,000-character strings are accepted → **Q-07** R-02 |
+| CRT-10 | Long strings (1,000 and 10,000 characters) | ❓ `201` or `422` with a clear limit; no `500` | ✅ | no length limit: 10,000-character strings are accepted → **[FAT-47](https://github.com/Requime31/fastapi-api-testing/issues/47)** R-02 |
 | CRT-11 | Record in `logs` | `level = INFO`, `message = item_created`, `user_id`, `path = /items/`, `method = POST`, `status_code = 201` | ✅ | R-12 |
 
 ### 1.2 Negative checks
 
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| CRT-12 | Empty `title: ""` | ❓ `422`: an item without a title makes no sense | ❌ | Actual: 201 {"id": 14, "updated_at": "2026-11-10T15:11:48.875627", "is_deleted": false, "owner_id": 107, "description": "desc", "title": … → **D-16** R-02 |
+| CRT-12 | Empty `title: ""` | ❓ `422`: an item without a title makes no sense | ❌ | Actual: 201 {"id": 14, "updated_at": "2026-11-10T15:11:48.875627", "is_deleted": false, "owner_id": 107, "description": "desc", "title": … → **[FAT-27](https://github.com/Requime31/fastapi-api-testing/issues/27)** R-02 |
 | CRT-13 | Empty `description: ""` | ❓ `422` or `201`. Record the behaviour | ✅ | an empty description is accepted R-02 |
-| CRT-14 | `title` of spaces `"   "` | ❓ `422` | ❌ | Actual: 201 {"id": 16, "updated_at": "2026-11-10T15:11:48.886734", "is_deleted": false, "owner_id": 107, "description": "desc", "title": … → **D-16** R-02 |
+| CRT-14 | `title` of spaces `"   "` | ❓ `422` | ❌ | Actual: 201 {"id": 16, "updated_at": "2026-11-10T15:11:48.886734", "is_deleted": false, "owner_id": 107, "description": "desc", "title": … → **[FAT-27](https://github.com/Requime31/fastapi-api-testing/issues/27)** R-02 |
 | CRT-15 | `title` missing | `422`, `Field required`, `loc: ["body","title"]` | ✅ | |
 | CRT-16 | `description` missing | `422`, `Field required` | ✅ | |
 | CRT-17 | Empty body `{}` | `422` for both fields | ✅ | |
@@ -73,8 +73,8 @@
 | MY-03 | Data isolation | User A sees only their own items, User B's items are absent (and vice versa) | ✅ | |
 | MY-04 | Deleted items are not returned | Delete an item → it is not in `GET /items/` | ✅ | R-04 |
 | MY-05 | An updated item is returned with new data | After `PUT` the list contains the new `title` / `description` | ✅ | |
-| MY-06 | Structure of each element | ❓ Fields as in `ItemResponse`; record extra fields | ❌ | Actual: element fields: ['created_at', 'description', 'id', 'is_deleted', 'owner_id', 'title', 'updated_at'] → **D-17** R-05 |
-| MY-07 | Element order | ❓ Deterministic (e.g. by `id` or `created_at`). Record the actual order | ❌ | Actual: order after an update: [22, 21] → **D-18** |
+| MY-06 | Structure of each element | ❓ Fields as in `ItemResponse`; record extra fields | ❌ | Actual: element fields: ['created_at', 'description', 'id', 'is_deleted', 'owner_id', 'title', 'updated_at'] → **[FAT-28](https://github.com/Requime31/fastapi-api-testing/issues/28)** R-05 |
+| MY-07 | Element order | ❓ Deterministic (e.g. by `id` or `created_at`). Record the actual order | ❌ | Actual: order after an update: [22, 21] → **[FAT-29](https://github.com/Requime31/fastapi-api-testing/issues/29)** |
 | MY-08 | Large number of items (100+) | ❓ All returned without pagination, acceptable response time. Record as a growth risk | ✅ | the endpoint has no pagination — the response grows with the number of items |
 | MY-09 | No token | `401` / `403` | ✅ | 403 instead of 401 — see FAT-13 → **[FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13)** R-06 |
 | MY-10 | Invalid token | `401` | ✅ | |
@@ -108,23 +108,23 @@
 
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| PAG-13 | Delete 5 items → `GET /items/all?limit=100` | Deleted items are **absent** from `data` | ❌ | Actual: deleted items still in data: 5 of 5 → **D-13** R-04 |
-| PAG-14 | `total` after deleting 5 items | `total = 20`, `pages` recalculated | ❌ | Actual: total after deleting 5 = 25, pages = 1 → **D-13** R-04 |
-| PAG-15 | Consistency of `GET /items/` and `GET /items/all` | Number of User A's items in `/items/all` = length of User A's `/items/` response | ❌ | Actual: User A: GET /items/ → 10, User A items in /items/all → 15 → **D-13** R-04 |
+| PAG-13 | Delete 5 items → `GET /items/all?limit=100` | Deleted items are **absent** from `data` | ❌ | Actual: deleted items still in data: 5 of 5 → **[FAT-24](https://github.com/Requime31/fastapi-api-testing/issues/24)** R-04 |
+| PAG-14 | `total` after deleting 5 items | `total = 20`, `pages` recalculated | ❌ | Actual: total after deleting 5 = 25, pages = 1 → **[FAT-24](https://github.com/Requime31/fastapi-api-testing/issues/24)** R-04 |
+| PAG-15 | Consistency of `GET /items/` and `GET /items/all` | Number of User A's items in `/items/all` = length of User A's `/items/` response | ❌ | Actual: User A: GET /items/ → 10, User A items in /items/all → 15 → **[FAT-24](https://github.com/Requime31/fastapi-api-testing/issues/24)** R-04 |
 
 ### 3.3 Negative and boundary checks
 
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| PAG-16 | `page=0` | `422` (pages start at 1); no `500` | ❌ | Actual: page=0 → 500 Internal Server Error → **D-14** R-03 |
-| PAG-17 | `page=-1` | `422`; no `500` | ❌ | Actual: page=-1 → 500 Internal Server Error → **D-14** R-03 |
-| PAG-18 | `limit=0` | `422`; no `500` | ❌ | Actual: limit=0 → 500 Internal Server Error → **D-14** R-03 |
-| PAG-19 | `limit=-5` | `422`; no `500` | ❌ | Actual: limit=-5 → 500 Internal Server Error → **D-14** R-03 |
-| PAG-20 | `limit=100000` | ❓ Capped at a maximum (e.g. 100) or `422`. Record whether the whole table can be dumped in one request | ❌ | Actual: limit=100000 → 200, limit in response=100000, returned 25 (all rows) → **D-15** R-03 |
+| PAG-16 | `page=0` | `422` (pages start at 1); no `500` | ❌ | Actual: page=0 → 500 Internal Server Error → **[FAT-25](https://github.com/Requime31/fastapi-api-testing/issues/25)** R-03 |
+| PAG-17 | `page=-1` | `422`; no `500` | ❌ | Actual: page=-1 → 500 Internal Server Error → **[FAT-25](https://github.com/Requime31/fastapi-api-testing/issues/25)** R-03 |
+| PAG-18 | `limit=0` | `422`; no `500` | ❌ | Actual: limit=0 → 500 Internal Server Error → **[FAT-25](https://github.com/Requime31/fastapi-api-testing/issues/25)** R-03 |
+| PAG-19 | `limit=-5` | `422`; no `500` | ❌ | Actual: limit=-5 → 500 Internal Server Error → **[FAT-25](https://github.com/Requime31/fastapi-api-testing/issues/25)** R-03 |
+| PAG-20 | `limit=100000` | ❓ Capped at a maximum (e.g. 100) or `422`. Record whether the whole table can be dumped in one request | ❌ | Actual: limit=100000 → 200, limit in response=100000, returned 25 (all rows) → **[FAT-26](https://github.com/Requime31/fastapi-api-testing/issues/26)** R-03 |
 | PAG-21 | Non-numeric values: `page=abc`, `limit=1.5`, `page=` | `422` naming the parameter | ✅ | |
 | PAG-22 | Very large `page=999999999999` | `200` with empty `data` or `422`; no `500` | ✅ | R-03 |
 | PAG-23 | No token | `401` / `403` | ✅ | 403 instead of 401 — see FAT-13 → **[FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13)** R-06 |
-| PAG-24 | Visibility of other users' items | ❓ Any authenticated user sees all users' items. Clarify whether this is intended (README: "Get all items"). Check whether `owner_id` / email are exposed | ✅ | any user sees all users' items with ['owner_id'] — confirm that a public list of all items is intended → **Q-05** R-05 |
+| PAG-24 | Visibility of other users' items | ❓ Any authenticated user sees all users' items. Clarify whether this is intended (README: "Get all items"). Check whether `owner_id` / email are exposed | ✅ | any user sees all users' items with ['owner_id'] — confirm that a public list of all items is intended → **[FAT-45](https://github.com/Requime31/fastapi-api-testing/issues/45)** R-05 |
 
 ---
 
@@ -146,7 +146,7 @@
 |---|---|---|---|---|---|
 | UPD-06 | Partial update: `title` only | `422` (PUT requires the full object). ❓ A partial update would be `PATCH` | ✅ | |
 | UPD-07 | Empty body `{}` | `422` | ✅ | |
-| UPD-08 | Invalid values (empty strings, `null`, wrong types) | Same rules as CRT-12…CRT-19 | ❌ | Actual: title → code: {"''": 200, 'None': 422, '123': 422} → **D-16** R-02 |
+| UPD-08 | Invalid values (empty strings, `null`, wrong types) | Same rules as CRT-12…CRT-19 | ❌ | Actual: title → code: {"''": 200, 'None': 422, '123': 422} → **[FAT-27](https://github.com/Requime31/fastapi-api-testing/issues/27)** R-02 |
 | UPD-09 | Attempt to change the owner: `"owner_id": <User B id>` in the body | Ignored: `owner_id` in the DB does not change | ✅ | |
 | UPD-10 | Attempt to restore a deleted item: `"is_deleted": false` in the body | Ignored | ✅ | |
 | UPD-11 | Non-existent `item_id` (e.g. 999999) | `404`, `"Item not found"` | ✅ | |
@@ -167,7 +167,7 @@
 | DEL-02 | Body of the `204` response | Empty (per HTTP, `204` has no body). Check the Body tab and the `Content-Length` header | ✅ | R-06 |
 | DEL-03 | Soft delete in the DB | The record **remains** in the table, `is_deleted = true` | ✅ | |
 | DEL-04 | The deleted item disappears from `GET /items/` | Not in the list | ✅ | R-04 |
-| DEL-05 | The deleted item disappears from `GET /items/all` | Not in `data`, `total` decreased | ❌ | Actual: in /items/all: True; total 127 → 127 → **D-13** R-04 |
+| DEL-05 | The deleted item disappears from `GET /items/all` | Not in `data`, `total` decreased | ❌ | Actual: in /items/all: True; total 127 → 127 → **[FAT-24](https://github.com/Requime31/fastapi-api-testing/issues/24)** R-04 |
 | DEL-06 | Deleting the same item again | `404`, `"Item not found"` | ✅ | |
 | DEL-07 | The user's other items are not affected | Delete 1 of 3 → 2 remain in the list | ✅ | |
 | DEL-08 | Non-existent `item_id` | `404` | ✅ | |
@@ -200,7 +200,7 @@
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
 | ACC-11 | Enumerating other users' ids: User B sends `PUT` for ids 1…N | None of User A's items is modified | ✅ | |
-| ACC-12 | Compare responses for someone else's item (`403`) and a non-existent one (`404`) | ❓ Different codes reveal which ids exist. Record as a remark; alternative — `404` in both cases | ❌ | Actual: someone else's item → 403, non-existent → 404 → **Q-06** |
+| ACC-12 | Compare responses for someone else's item (`403`) and a non-existent one (`404`) | ❓ Different codes reveal which ids exist. Record as a remark; alternative — `404` in both cases | ❌ | Actual: someone else's item → 403, non-existent → 404 → **[FAT-46](https://github.com/Requime31/fastapi-api-testing/issues/46)** |
 | ACC-13 | User deleted from the DB, their token still valid → `POST /items/` | `401`, `"User not found"` | ✅ | |
 | ACC-14 | Items of a deleted user in `GET /items/all` | ❓ Record the behaviour (orphans with `owner_id` without a user) | ⏭ | Actual: a user with items cannot be deleted: ERROR:  update or delete on table "users" violates foreign key constraint "items_owner_id_fk… → **[FAT-23](https://github.com/Requime31/fastapi-api-testing/issues/23)** |
 | ACC-15 | Record in `logs` on `403` | `level = WARNING`, `message = item_update_forbidden` / `item_delete_forbidden`, `user_id` = the offender | ✅ | R-12 |
@@ -213,11 +213,11 @@
 |---|---|---|---|---|---|
 | CTR-01 | `GET /items/{item_id}` (get a single item) | The endpoint is not documented in the README. Record the actual response (`405`?) and the missing feature | ✅ | there is no endpoint to fetch a single item |
 | CTR-02 | Unsupported methods: `PATCH /items/1`, `DELETE /items/`, `PUT /items/` | `405 Method Not Allowed` | ✅ | |
-| CTR-03 | Responses match `/openapi.json` | Each endpoint documents the response schema and error codes. ❓ Items endpoints have no code descriptions in Swagger — record | ❌ | Actual: documented codes: {'GET /items/': ['200'], 'POST /items/': ['201', '422'], 'GET /items/all': ['200', '422'], 'PUT /items/{item_id… → **D-19** R-06 |
+| CTR-03 | Responses match `/openapi.json` | Each endpoint documents the response schema and error codes. ❓ Items endpoints have no code descriptions in Swagger — record | ❌ | Actual: documented codes: {'GET /items/': ['200'], 'POST /items/': ['201', '422'], 'GET /items/all': ['200', '422'], 'PUT /items/{item_id… → **[FAT-30](https://github.com/Requime31/fastapi-api-testing/issues/30)** R-06 |
 | CTR-04 | `Content-Type: application/json` for all responses (except `204`) | Yes | ✅ | |
 | CTR-05 | Errors do not expose internals | No stack trace, SQL, file paths | ✅ | 500 responses are plain-text "Internal Server Error" without details |
 | CTR-06 | Response time | ❓ All endpoints < 500 ms on the local stand | ✅ | |
-| CTR-07 | Date format in the response (if `created_at` / `updated_at` are returned) | ISO 8601, ❓ with a time zone | ❌ | Actual: created_at = '2026-11-10T15:11:55.488475' → **D-20** R-05 |
+| CTR-07 | Date format in the response (if `created_at` / `updated_at` are returned) | ISO 8601, ❓ with a time zone | ❌ | Actual: created_at = '2026-11-10T15:11:55.488475' → **[FAT-31](https://github.com/Requime31/fastapi-api-testing/issues/31)** R-05 |
 
 ---
 
@@ -227,7 +227,7 @@
 |---|---|---|---|---|---|
 | E2E-01 | Login → Create → `GET /items/` → Update → `GET /items/` → Delete → `GET /items/` | The item appears, is updated, disappears | ✅ | |
 | E2E-02 | User A creates an item → User B tries Update and Delete → User A calls `GET /items/` | User B gets `403`; User A's data is unchanged | ✅ | |
-| E2E-03 | Create 12 items → delete 3 → walk `GET /items/all` page by page | `total = 9`, no deleted items on any page | ❌ | Actual: user's items across all pages: 12 (expected 9), deleted ones visible: 3 → **D-13** R-04 |
+| E2E-03 | Create 12 items → delete 3 → walk `GET /items/all` page by page | `total = 9`, no deleted items on any page | ❌ | Actual: user's items across all pages: 12 (expected 9), deleted ones visible: 3 → **[FAT-24](https://github.com/Requime31/fastapi-api-testing/issues/24)** R-04 |
 | E2E-04 | Create → token refresh → Update with the new access token | `200`: the item is accessible after token rotation | ✅ | |
 
 ---
@@ -248,23 +248,23 @@
 
 Pass rate: **83.6%** (excluding ⏭). The module does not meet the exit criterion "≥ 95% passed".
 
-**Defects found:** D-xx are working IDs until the defects are filed in Jira.
+**Defects found:**
 
 | Jira / GitHub | Check | Title | Severity |
 |---|---|---|---|
-| D-13 | PAG-13, PAG-14, PAG-15, DEL-05, E2E-03 | `GET /items/all` returns soft-deleted items and counts them in `total` / `pages` | Major |
-| D-14 | PAG-16, PAG-17, PAG-18, PAG-19 | `GET /items/all`: `page ≤ 0` or `limit ≤ 0` cause `500 Internal Server Error` | Major |
-| D-15 | PAG-20 | `GET /items/all`: no upper bound for `limit` — the whole table can be fetched in one request | Minor |
-| D-16 | CRT-12, CRT-14, UPD-08 | Items: an empty or whitespace-only `title` is accepted on create and update | Minor |
-| D-17 | CRT-04, MY-06 | Item responses expose internal fields (`owner_id`, `is_deleted`, `created_at`, `updated_at`) — `ItemResponse` is not used as `response_model` | Minor |
-| D-18 | MY-07 | `GET /items/` and `GET /items/all` have no `ORDER BY` — the order changes after an update | Minor |
-| D-19 | CTR-03 | Swagger: items endpoints have no descriptions, no error codes (401/403/404) and no response schemas | Minor |
-| D-20 | CTR-07 | Timestamps are returned without a time zone (`2026-11-10T15:11:55.488475`) | Trivial |
+| [FAT-24](https://github.com/Requime31/fastapi-api-testing/issues/24) | PAG-13, PAG-14, PAG-15, DEL-05, E2E-03 | `GET /items/all` returns soft-deleted items and counts them in `total` / `pages` | Major |
+| [FAT-25](https://github.com/Requime31/fastapi-api-testing/issues/25) | PAG-16, PAG-17, PAG-18, PAG-19 | `GET /items/all`: `page ≤ 0` or `limit ≤ 0` cause `500 Internal Server Error` | Major |
+| [FAT-26](https://github.com/Requime31/fastapi-api-testing/issues/26) | PAG-20 | `GET /items/all`: no upper bound for `limit` — the whole table can be fetched in one request | Minor |
+| [FAT-27](https://github.com/Requime31/fastapi-api-testing/issues/27) | CRT-12, CRT-14, UPD-08 | Items: an empty or whitespace-only `title` is accepted on create and update | Minor |
+| [FAT-28](https://github.com/Requime31/fastapi-api-testing/issues/28) | CRT-04, MY-06 | Item responses expose internal fields (`owner_id`, `is_deleted`, `created_at`, `updated_at`) — `ItemResponse` is not used as `response_model` | Minor |
+| [FAT-29](https://github.com/Requime31/fastapi-api-testing/issues/29) | MY-07 | `GET /items/` and `GET /items/all` have no `ORDER BY` — the order changes after an update | Minor |
+| [FAT-30](https://github.com/Requime31/fastapi-api-testing/issues/30) | CTR-03 | Swagger: items endpoints have no descriptions, no error codes (401/403/404) and no response schemas | Minor |
+| [FAT-31](https://github.com/Requime31/fastapi-api-testing/issues/31) | CTR-07 | Timestamps are returned without a time zone (`2026-11-10T15:11:55.488475`) | Trivial |
 
 **Questions to the developer (❓ checks):**
 
 | Jira / GitHub | Check | Question | Answer |
 |---|---|---|---|
-| Q-05 | PAG-24 | `GET /items/all` shows every user's items (with `owner_id`) to any authenticated user. Is a public list of all items intended? | |
-| Q-06 | ACC-12 | Someone else's item → `403`, a non-existent one → `404`: the difference reveals which ids exist. Should both return `404`? | |
-| Q-07 | CRT-10 | `title` / `description` have no length limit (10,000 characters are accepted). What are the maximum lengths? | |
+| [FAT-45](https://github.com/Requime31/fastapi-api-testing/issues/45) | PAG-24 | `GET /items/all` shows every user's items (with `owner_id`) to any authenticated user. Is a public list of all items intended? | |
+| [FAT-46](https://github.com/Requime31/fastapi-api-testing/issues/46) | ACC-12 | Someone else's item → `403`, a non-existent one → `404`: the difference reveals which ids exist. Should both return `404`? | |
+| [FAT-47](https://github.com/Requime31/fastapi-api-testing/issues/47) | CRT-10 | `title` / `description` have no length limit (10,000 characters are accepted). What are the maximum lengths? | |

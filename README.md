@@ -16,7 +16,7 @@ The project simulates the work of a QA Engineer on a real backend: from smoke te
 | Planning | [Test Plan](docs/TEST_PLAN.md) | ✅ Ready |
 | Test design | [Checklists](docs/checklists/) — 381 checks | ✅ Ready |
 | Execution | All 4 checklists executed on build `660708b` — 381 checks: 300 ✅ / 79 ❌ / 2 ⏭ ([CL-01](docs/checklists/CL-01_Auth.md) 98/19/1 · [CL-02](docs/checklists/CL-02_Items.md) 97/19/1 · [CL-03](docs/checklists/CL-03_RateLimit.md) 38/12/0 · [CL-04](docs/checklists/CL-04_Health_Logs_CORS.md) 67/29/0; [raw results](qa/runs/)) | ✅ Cycle 1 executed |
-| Tracking | Jira `FAT` ([cycle epic FAT-1](../../issues/1)) → mirrored to [Issues](../../issues): CL-01 — [12 bugs](../../issues?q=label%3Abug), [4 questions](../../issues?q=label%3Aquestion) filed; CL-02…CL-04 — 21 defects and 6 questions triaged, filing in progress | 🔄 In progress |
+| Tracking | Jira `FAT` ([cycle epic FAT-1](../../issues/1)) → mirrored to [Issues](../../issues): [33 bugs](../../issues?q=label%3Abug) (11 Major · 20 Minor · 2 Trivial, no Blocker / Critical) and [10 questions](../../issues?q=label%3Aquestion) filed, every one linked from its checklist | ✅ Filed |
 | Reporting | Test Summary Report | ⏳ |
 
 ---

@@ -34,8 +34,8 @@
   ],
   "defects": [
     {
-      "key": "D-21",
-      "issue": null,
+      "key": "FAT-32",
+      "issue": 32,
       "checks": [
         "RL-11"
       ],
@@ -43,8 +43,8 @@
       "severity": "Major"
     },
     {
-      "key": "D-22",
-      "issue": null,
+      "key": "FAT-33",
+      "issue": 33,
       "checks": [
         "RL-34",
         "RL-36",
@@ -54,8 +54,8 @@
       "severity": "Major"
     },
     {
-      "key": "D-23",
-      "issue": null,
+      "key": "FAT-34",
+      "issue": 34,
       "checks": [
         "RL-15",
         "RL-17",
@@ -66,8 +66,8 @@
       "severity": "Minor"
     },
     {
-      "key": "D-24",
-      "issue": null,
+      "key": "FAT-35",
+      "issue": 35,
       "checks": [
         "RL-42"
       ],
@@ -75,8 +75,8 @@
       "severity": "Minor"
     },
     {
-      "key": "D-25",
-      "issue": null,
+      "key": "FAT-36",
+      "issue": 36,
       "checks": [
         "RL-39"
       ],
@@ -86,16 +86,16 @@
   ],
   "questions": [
     {
-      "key": "Q-08",
-      "issue": null,
+      "key": "FAT-48",
+      "issue": 48,
       "checks": [
         "RL-32"
       ],
       "question": "There is no per-account limit or lockout: each additional client IP gets 5 more password attempts per minute. Is account lockout planned?"
     },
     {
-      "key": "Q-09",
-      "issue": null,
+      "key": "FAT-49",
+      "issue": 49,
       "checks": [
         "RL-47",
         "RL-46"

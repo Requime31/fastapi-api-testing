@@ -33,7 +33,7 @@
 | HL-04 | Response structure and types | Exactly two string fields `status` and `database`; `Content-Type: application/json` | ✅ | |
 | HL-05 | The response does not expose sensitive data | No software versions, connection string, DB host name, environment variables | ✅ | no versions or connection details in the body |
 | HL-06 | Response time | ❓ < 200 ms on the local stand (health is polled often by monitoring) | ✅ | |
-| HL-07 | `HEAD /health` method | ❓ `200` without a body: some monitoring systems use `HEAD`. Record the actual response | ❌ | Actual: HEAD /health → 405 → **D-29** |
+| HL-07 | `HEAD /health` method | ❓ `200` without a body: some monitoring systems use `HEAD`. Record the actual response | ❌ | Actual: HEAD /health → 405 → **[FAT-40](https://github.com/Requime31/fastapi-api-testing/issues/40)** |
 | HL-08 | Unsupported methods (`POST`, `DELETE`) | `405 Method Not Allowed` | ✅ | |
 | HL-09 | Path `/health/` (trailing slash) | `307` redirect to `/health` or `404`. Record | ✅ | |
 
@@ -44,8 +44,8 @@
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
 | HL-10 | `GET /health` with the DB stopped | `"database": "error"`; the response arrives without hanging | ✅ | |
-| HL-11 | HTTP code with the DB unavailable | ❓ `503 Service Unavailable`: load balancers and monitoring rely on the code, not the body. If `200` is returned, monitoring will not see the problem — record | ❌ | Actual: HTTP 200 → **D-28** |
-| HL-12 | `status` field with the DB unavailable | ❓ `"status"` reflects the overall failure (`"error"` / `"degraded"`), not `"ok"` | ❌ | Actual: status = ok → **D-28** |
+| HL-11 | HTTP code with the DB unavailable | ❓ `503 Service Unavailable`: load balancers and monitoring rely on the code, not the body. If `200` is returned, monitoring will not see the problem — record | ❌ | Actual: HTTP 200 → **[FAT-39](https://github.com/Requime31/fastapi-api-testing/issues/39)** |
+| HL-12 | `status` field with the DB unavailable | ❓ `"status"` reflects the overall failure (`"error"` / `"degraded"`), not `"ok"` | ❌ | Actual: status = ok → **[FAT-39](https://github.com/Requime31/fastapi-api-testing/issues/39)** |
 | HL-13 | Response time with the DB unavailable | ❓ Response within a reasonable timeout (< 5 s), not after a long connection wait | ✅ | |
 | HL-14 | DB error text is not in the response | The response contains only `"error"`, no exception text | ✅ | |
 | HL-15 | Other endpoints with the DB unavailable (`POST /users/login`) | ❓ `503` / `500` with a generic message, no stack trace or connection details | ✅ | |
@@ -55,10 +55,10 @@
 
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| HL-17 | Migrations on startup | API logs contain `Migrations completed successfully`; `SELECT version_num FROM alembic_version;` = the latest revision (`alembic heads`) | ❌ | Actual: alembic_version table exists: False, version=None, head=08621c7ff5c6; manual `alembic upgrade head` → exit 1: sqlalchemy.exc.Prog… → **D-26** |
+| HL-17 | Migrations on startup | API logs contain `Migrations completed successfully`; `SELECT version_num FROM alembic_version;` = the latest revision (`alembic heads`) | ❌ | Actual: alembic_version table exists: False, version=None, head=08621c7ff5c6; manual `alembic upgrade head` → exit 1: sqlalchemy.exc.Prog… → **[FAT-37](https://github.com/Requime31/fastapi-api-testing/issues/37)** |
 | HL-18 | API startup with the DB unavailable | ❓ Stop `db` → `docker compose restart api`. Record: does the app fail with a clear error, does it start without migrations | ✅ | the app crashes on startup (create_all fails) and the container stays down until restarted manually; stand restored: True |
-| HL-19 | Cold start: `docker compose down -v && docker compose up` | A clean DB is created, migrations are applied, `GET /health` → `"database": "ok"` | ❌ | Actual: fresh stack with an empty volume: /health ok=True after 4 s, tables=4, alembic_version=none; last migration step in the log: api-… → **D-26** |
-| HL-20 | DB schema matches the models | ❓ `\d users`, `\d items`, `\d refresh_tokens`, `\d logs` match `app/models.py`; `alembic check` finds no differences | ❌ | Actual: alembic check → exit 255: ERROR [alembic.util.messaging] Target database is not up to date. → **D-26** |
+| HL-19 | Cold start: `docker compose down -v && docker compose up` | A clean DB is created, migrations are applied, `GET /health` → `"database": "ok"` | ❌ | Actual: fresh stack with an empty volume: /health ok=True after 4 s, tables=4, alembic_version=none; last migration step in the log: api-… → **[FAT-37](https://github.com/Requime31/fastapi-api-testing/issues/37)** |
+| HL-20 | DB schema matches the models | ❓ `\d users`, `\d items`, `\d refresh_tokens`, `\d logs` match `app/models.py`; `alembic check` finds no differences | ❌ | Actual: alembic check → exit 255: ERROR [alembic.util.messaging] Target database is not up to date. → **[FAT-37](https://github.com/Requime31/fastapi-api-testing/issues/37)** |
 
 ---
 
@@ -86,21 +86,21 @@
 | LG-12 | Item deleted | `INFO`, `item_deleted`, `method = DELETE`, `status_code = 204` | ✅ | |
 | LG-13 | Update / Delete of a non-existent item | `WARNING`, `item_not_found`, `status_code = 404` | ✅ | |
 | LG-14 | Update / Delete of someone else's item | `WARNING`, `item_update_forbidden` / `item_delete_forbidden`, `status_code = 403`, `user_id` of the offender | ✅ | |
-| LG-15 | Request with an invalid access token (`401`) | ❓ Record whether it is logged (access attempts with forged tokens matter for security) | ❌ | Actual: request with an invalid token → new log records: 0 → **D-25** |
+| LG-15 | Request with an invalid access token (`401`) | ❓ Record whether it is logged (access attempts with forged tokens matter for security) | ❌ | Actual: request with an invalid token → new log records: 0 → **[FAT-36](https://github.com/Requime31/fastapi-api-testing/issues/36)** |
 | LG-16 | Validation error (`422`) | ❓ Record whether it is logged | ✅ | validation errors are not logged (acceptable) |
-| LG-17 | Rate limit exceeded (`429`) | ❓ Record whether it is logged (see RL-39) | ❌ | Actual: see CL-03 RL-39: rate limit violations are not written to logs or the console → **D-25** |
+| LG-17 | Rate limit exceeded (`429`) | ❓ Record whether it is logged (see RL-39) | ❌ | Actual: see CL-03 RL-39: rate limit violations are not written to logs or the console → **[FAT-36](https://github.com/Requime31/fastapi-api-testing/issues/36)** |
 | LG-18 | `GET /items/`, `GET /items/all`, `GET /health` | ❓ Record whether read operations are logged. Absence is fine if intended | ✅ | read operations are not logged (acceptable) |
-| LG-19 | Server error (`500`, e.g. with the DB unavailable) | ❓ An `ERROR` record in the console (it cannot be written to the DB) | ❌ | Actual: console lines during the DB outage: ERROR/Exception lines 0, structured JSON ERROR: False → **D-27** |
+| LG-19 | Server error (`500`, e.g. with the DB unavailable) | ❓ An `ERROR` record in the console (it cannot be written to the DB) | ❌ | Actual: console lines during the DB outage: ERROR/Exception lines 0, structured JSON ERROR: False → **[FAT-38](https://github.com/Requime31/fastapi-api-testing/issues/38)** |
 
 ### 2.2 Field quality and completeness
 
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| LG-20 | `ip` field | ❓ Filled with the client IP for all records. Without the IP attacks cannot be investigated. Record the share of filled records | ❌ | Actual: records with ip: 0 of 1562 → **D-30** R-12 |
-| LG-21 | `duration_ms` field | ❓ Filled with the request processing time. Record the share of filled records | ❌ | Actual: records with duration_ms: 0 of 1562 → **D-30** R-12 |
-| LG-22 | `method` and `status_code` fields | ❓ Filled consistently for all events (both users and items). Compare LG-01…LG-09 with LG-10…LG-14 | ❌ | Actual: auth records with method/status_code: 0 of 1019; items records: always set → **D-30** R-12 |
+| LG-20 | `ip` field | ❓ Filled with the client IP for all records. Without the IP attacks cannot be investigated. Record the share of filled records | ❌ | Actual: records with ip: 0 of 1562 → **[FAT-41](https://github.com/Requime31/fastapi-api-testing/issues/41)** R-12 |
+| LG-21 | `duration_ms` field | ❓ Filled with the request processing time. Record the share of filled records | ❌ | Actual: records with duration_ms: 0 of 1562 → **[FAT-41](https://github.com/Requime31/fastapi-api-testing/issues/41)** R-12 |
+| LG-22 | `method` and `status_code` fields | ❓ Filled consistently for all events (both users and items). Compare LG-01…LG-09 with LG-10…LG-14 | ❌ | Actual: auth records with method/status_code: 0 of 1019; items records: always set → **[FAT-41](https://github.com/Requime31/fastapi-api-testing/issues/41)** R-12 |
 | LG-23 | `status_code` matches the actual response code | For each record `status_code` = the code the client received | ✅ | |
-| LG-24 | Consistent `message` format | ❓ Users use free text with email, items use event codes (`item_created`). Record the inconsistency | ❌ | Actual: message styles: free text with email ("User logged in: user@…") vs event codes (All sessions revoked for user_id: 132, Invalid or… → **D-30** |
+| LG-24 | Consistent `message` format | ❓ Users use free text with email, items use event codes (`item_created`). Record the inconsistency | ❌ | Actual: message styles: free text with email ("User logged in: user@…") vs event codes (All sessions revoked for user_id: 132, Invalid or… → **[FAT-41](https://github.com/Requime31/fastapi-api-testing/issues/41)** |
 | LG-25 | `level` — only allowed values | `INFO`, `WARNING`, `ERROR` in upper case | ✅ | |
 | LG-26 | `created_at` | Set, in UTC, ≈ request time; records are ordered by time | ✅ | |
 | LG-27 | One action — one record | No duplicate records for one request | ✅ | |
@@ -114,17 +114,17 @@
 | LG-30 | Email (PII) in logs | ❓ Emails are stored in `message` in plain text. Record as a remark (GDPR, masking `u***@test.com`) | ❌ | Actual: records of this run containing an email: 10 → **[FAT-17](https://github.com/Requime31/fastapi-api-testing/issues/17)** R-12 |
 | LG-31 | Emails of non-existent users in logs | ❓ On a failed login any email typed by anyone is logged. Check with an email like `"<script>@x.com"` and a long email: the record is not broken | ✅ | invalid emails are rejected by validation before logging, so arbitrary strings cannot reach the log |
 | LG-32 | Log injection | Registration / login with an email containing `\n` or a JSON fragment (if it passes validation): the console log stays valid single-line JSON, no fake record is created | ✅ | rejected by email validation |
-| LG-33 | Retention and rotation | ❓ The `logs` table grows without limit. Clarify the retention policy | ❌ | Actual: logs table: 1563 rows since 2026-11-05 14:15:27.205972; no retention / cleanup in the code → **Q-10** |
+| LG-33 | Retention and rotation | ❓ The `logs` table grows without limit. Clarify the retention policy | ❌ | Actual: logs table: 1563 rows since 2026-11-05 14:15:27.205972; no retention / cleanup in the code → **[FAT-50](https://github.com/Requime31/fastapi-api-testing/issues/50)** |
 
 ### 2.4 Console JSON log
 
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| LG-34 | Line format | Each application log line is valid JSON (check: `docker compose logs --no-log-prefix api \| grep '"level"' \| python -m json.tool --json-lines`) | ❌ | Actual: container log: 165 lines in total, JSON lines: 0, invalid: 0 → **D-27** |
-| LG-35 | Mandatory fields | `time` (ISO 8601, UTC), `level`, `message` | ❌ | Actual: JSON lines to check: 0 → **D-27** |
-| LG-36 | Additional fields | `user_id`, `path`, `method`, `status_code` are present when passed; empty ones are omitted | ❌ | Actual: item_created line in the console: None → **D-27** |
-| LG-37 | Console and DB consistency | For one event `level`, `message`, `user_id` match in the console and in `logs` | ❌ | Actual: console None vs DB ('INFO', '132') → **D-27** |
-| LG-38 | uvicorn logs (access log) | ❓ uvicorn lines are not JSON — record the mixed formats in one stream | ❌ | Actual: non-JSON lines in the stream: 165 (e.g. INFO  [alembic.runtime.migration] Running upgrade 2317e5de5f12 -> 1244) → **D-27** |
+| LG-34 | Line format | Each application log line is valid JSON (check: `docker compose logs --no-log-prefix api \| grep '"level"' \| python -m json.tool --json-lines`) | ❌ | Actual: container log: 165 lines in total, JSON lines: 0, invalid: 0 → **[FAT-38](https://github.com/Requime31/fastapi-api-testing/issues/38)** |
+| LG-35 | Mandatory fields | `time` (ISO 8601, UTC), `level`, `message` | ❌ | Actual: JSON lines to check: 0 → **[FAT-38](https://github.com/Requime31/fastapi-api-testing/issues/38)** |
+| LG-36 | Additional fields | `user_id`, `path`, `method`, `status_code` are present when passed; empty ones are omitted | ❌ | Actual: item_created line in the console: None → **[FAT-38](https://github.com/Requime31/fastapi-api-testing/issues/38)** |
+| LG-37 | Console and DB consistency | For one event `level`, `message`, `user_id` match in the console and in `logs` | ❌ | Actual: console None vs DB ('INFO', '132') → **[FAT-38](https://github.com/Requime31/fastapi-api-testing/issues/38)** |
+| LG-38 | uvicorn logs (access log) | ❓ uvicorn lines are not JSON — record the mixed formats in one stream | ❌ | Actual: non-JSON lines in the stream: 165 (e.g. INFO  [alembic.runtime.migration] Running upgrade 2317e5de5f12 -> 1244) → **[FAT-38](https://github.com/Requime31/fastapi-api-testing/issues/38)** |
 
 ---
 
@@ -172,11 +172,11 @@
 |---|---|---|---|---|---|
 | CR-16 | `401` response with the allowed `Origin` | CORS headers present (otherwise the frontend cannot read the error) | ✅ | |
 | CR-17 | `429` response with the allowed `Origin` | CORS headers present | ✅ | |
-| CR-18 | `500` response (DB stopped) with the allowed `Origin` | ❓ Record whether CORS headers are present. Without them the browser shows a CORS error instead of the server error | ❌ | Actual: 500 (DB down, HL-15) with the allowed Origin → ACAO=None → **D-31** |
+| CR-18 | `500` response (DB stopped) with the allowed `Origin` | ❓ Record whether CORS headers are present. Without them the browser shows a CORS error instead of the server error | ❌ | Actual: 500 (DB down, HL-15) with the allowed Origin → ACAO=None → **[FAT-42](https://github.com/Requime31/fastapi-api-testing/issues/42)** |
 | CR-19 | Are preflight requests counted by the rate limit | ❓ 110 × `OPTIONS /health` → record whether `429` comes | ✅ | preflight requests are answered by CORSMiddleware before the rate limiter |
 | CR-20 | Browser check | From `http://localhost:3000` fetch succeeds; from `http://localhost:8080` (`python3 -m http.server 8080`) — CORS error in the console | ✅ | |
 | CR-21 | Request without `Origin` (curl, Postman) | Processed normally. This is expected: CORS protects the browser, not the server | ✅ | |
-| CR-22 | Origin configuration (code analysis) | ❓ Only `http://localhost:3000` is allowed, the origin is hardcoded in `main.py` instead of `.env`. Any other environment needs a new release — record as a remark | ❌ | Actual: app/main.py: allow_origins=["http://localhost:3000"] (hardcoded) → **D-32** R-15 |
+| CR-22 | Origin configuration (code analysis) | ❓ Only `http://localhost:3000` is allowed, the origin is hardcoded in `main.py` instead of `.env`. Any other environment needs a new release — record as a remark | ❌ | Actual: app/main.py: allow_origins=["http://localhost:3000"] (hardcoded) → **[FAT-43](https://github.com/Requime31/fastapi-api-testing/issues/43)** R-15 |
 
 ---
 
@@ -196,10 +196,10 @@
 |---|---|---|---|---|---|
 | DOC-04 | All endpoints from the README are present | 11 endpoints grouped by tags `Users`, `Items`, `Health` | ✅ | |
 | DOC-05 | Version | `info.version` = `1.7.0`; matches README / Roadmap | ✅ | |
-| DOC-06 | Endpoint descriptions | Every endpoint has a `summary` and a description. ❓ Items endpoints have none — record (Roadmap v1.7: "Swagger descriptions per endpoint" is marked done) | ❌ | Actual: operations without a description: ['DELETE /items/{item_id}', 'GET /items/', 'GET /items/all', 'POST /items/', 'PUT /items/{item_… → **D-19** |
+| DOC-06 | Endpoint descriptions | Every endpoint has a `summary` and a description. ❓ Items endpoints have none — record (Roadmap v1.7: "Swagger descriptions per endpoint" is marked done) | ❌ | Actual: operations without a description: ['DELETE /items/{item_id}', 'GET /items/', 'GET /items/all', 'POST /items/', 'PUT /items/{item_… → **[FAT-30](https://github.com/Requime31/fastapi-api-testing/issues/30)** |
 | DOC-07 | Documented response codes | Every code in the description is reproducible (cross-check with CL-01 SEC-10, CL-02 CTR-03) | ❌ | Actual: login: 200/401/404 reproduced; logout-all documents 401 but returns 403 without a token (FAT-13); refresh/logout document an unre… → **[FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13), [FAT-22](https://github.com/Requime31/fastapi-api-testing/issues/22)** R-06 |
-| DOC-08 | Response schemas | ❓ Endpoints declare response schemas (`response_model`), not an empty `{}` | ❌ | Actual: operations whose success response schema is empty: ['DELETE /items/{item_id}', 'GET /health', 'GET /items/', 'GET /items/all', 'P… → **D-19** R-05 |
-| DOC-09 | Pagination parameter description | `page`, `limit`: type, defaults; ❓ min/max constraints | ❌ | Actual: /items/all params: {'page': {'type': 'integer', 'default': 1, 'title': 'Page'}, 'limit': {'type': 'integer', 'default': 10, 'titl… → **D-19** |
+| DOC-08 | Response schemas | ❓ Endpoints declare response schemas (`response_model`), not an empty `{}` | ❌ | Actual: operations whose success response schema is empty: ['DELETE /items/{item_id}', 'GET /health', 'GET /items/', 'GET /items/all', 'P… → **[FAT-30](https://github.com/Requime31/fastapi-api-testing/issues/30)** R-05 |
+| DOC-09 | Pagination parameter description | `page`, `limit`: type, defaults; ❓ min/max constraints | ❌ | Actual: /items/all params: {'page': {'type': 'integer', 'default': 1, 'title': 'Page'}, 'limit': {'type': 'integer', 'default': 10, 'titl… → **[FAT-30](https://github.com/Requime31/fastapi-api-testing/issues/30)** |
 | DOC-10 | Field constraints in schemas | ❓ Constraints (e.g. password min 6) are reflected in the schema (`minLength`), not only in the description text | ❌ | Actual: UserCreate.password schema: {'type': 'string', 'title': 'Password'} → **[FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8)** R-01 |
 | DOC-11 | Security scheme | `HTTPBearer` is described; protected endpoints show a lock | ✅ | |
 | DOC-12 | **Authorize** button | After entering a token, items requests from Swagger UI return `200` | ✅ | verified at the API level; the Authorize dialog itself was checked in the browser |
@@ -211,7 +211,7 @@
 | ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
 | DOC-15 | Endpoint table in the README | Methods, paths and auth flag match `/openapi.json` and actual behaviour | ✅ | |
-| DOC-16 | Environment variables in the README | The list and defaults match `app/config.py` and `.env.example` | ❌ | Actual: variables required by docker-compose.yml but absent from the README table and .env.example (build 660708b): ['POSTGRES_DB', 'POST… → **D-33** |
+| DOC-16 | Environment variables in the README | The list and defaults match `app/config.py` and `.env.example` | ❌ | Actual: variables required by docker-compose.yml but absent from the README table and .env.example (build 660708b): ['POSTGRES_DB', 'POST… → **[FAT-44](https://github.com/Requime31/fastapi-api-testing/issues/44)** |
 
 ---
 
@@ -227,23 +227,23 @@
 
 Pass rate: **69.8%** (excluding ⏭). The module does not meet the exit criterion "≥ 95% passed".
 
-**Defects found:** D-xx are working IDs until the defects are filed in Jira.
+**Defects found:**
 
 | Jira / GitHub | Check | Title | Severity |
 |---|---|---|---|
-| D-26 | HL-17, HL-19, HL-20 | Alembic migrations fail on every startup and the failure is silent: the initial migration is empty, the schema is created by `create_all`, `alembic_version` never exists | Major |
-| D-27 | LG-19, LG-34, LG-35, LG-36, LG-37, LG-38 | No application or uvicorn logs reach the console after startup: `fileConfig()` in `alembic/env.py` disables the existing loggers | Major |
-| D-28 | HL-11, HL-12 | `GET /health` returns `200` with `"status": "ok"` when the database is down | Major |
-| D-29 | HL-07 | `HEAD /health` returns `405` | Minor |
-| D-30 | LG-20, LG-21, LG-22, LG-24 | Log records are incomplete: `ip` and `duration_ms` are never filled, `method` / `status_code` are missing for auth events, two message formats | Minor |
-| D-25 | LG-15, LG-17 | Security events are not logged: failed authentication (invalid / forged token) and rate limit violations (429) leave no record | Minor |
-| D-31 | CR-18 | `500` responses carry no CORS headers — the browser shows a CORS error instead of the server error | Minor |
-| D-32 | CR-22 | Allowed CORS origins are hardcoded in `main.py` (`http://localhost:3000`) | Minor |
-| D-33 | DOC-16 | Setup docs: `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` required by `docker-compose.yml` are missing from the README and `.env.example` | Minor |
-| D-19 | DOC-06, DOC-08, DOC-09 | Swagger: items endpoints have no descriptions, no error codes (401/403/404) and no response schemas | Minor |
+| [FAT-37](https://github.com/Requime31/fastapi-api-testing/issues/37) | HL-17, HL-19, HL-20 | Alembic migrations fail on every startup and the failure is silent: the initial migration is empty, the schema is created by `create_all`, `alembic_version` never exists | Major |
+| [FAT-38](https://github.com/Requime31/fastapi-api-testing/issues/38) | LG-19, LG-34, LG-35, LG-36, LG-37, LG-38 | No application or uvicorn logs reach the console after startup: `fileConfig()` in `alembic/env.py` disables the existing loggers | Major |
+| [FAT-39](https://github.com/Requime31/fastapi-api-testing/issues/39) | HL-11, HL-12 | `GET /health` returns `200` with `"status": "ok"` when the database is down | Major |
+| [FAT-40](https://github.com/Requime31/fastapi-api-testing/issues/40) | HL-07 | `HEAD /health` returns `405` | Minor |
+| [FAT-41](https://github.com/Requime31/fastapi-api-testing/issues/41) | LG-20, LG-21, LG-22, LG-24 | Log records are incomplete: `ip` and `duration_ms` are never filled, `method` / `status_code` are missing for auth events, two message formats | Minor |
+| [FAT-36](https://github.com/Requime31/fastapi-api-testing/issues/36) | LG-15, LG-17 | Security events are not logged: failed authentication (invalid / forged token) and rate limit violations (429) leave no record | Minor |
+| [FAT-42](https://github.com/Requime31/fastapi-api-testing/issues/42) | CR-18 | `500` responses carry no CORS headers — the browser shows a CORS error instead of the server error | Minor |
+| [FAT-43](https://github.com/Requime31/fastapi-api-testing/issues/43) | CR-22 | Allowed CORS origins are hardcoded in `main.py` (`http://localhost:3000`) | Minor |
+| [FAT-44](https://github.com/Requime31/fastapi-api-testing/issues/44) | DOC-16 | Setup docs: `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` required by `docker-compose.yml` are missing from the README and `.env.example` | Minor |
+| [FAT-30](https://github.com/Requime31/fastapi-api-testing/issues/30) | DOC-06, DOC-08, DOC-09 | Swagger: items endpoints have no descriptions, no error codes (401/403/404) and no response schemas | Minor |
 
 **Questions to the developer (❓ checks):**
 
 | Jira / GitHub | Check | Question | Answer |
 |---|---|---|---|
-| Q-10 | LG-33 | The `logs` table grows without limit (no retention or cleanup). What is the retention policy? | |
+| [FAT-50](https://github.com/Requime31/fastapi-api-testing/issues/50) | LG-33 | The `logs` table grows without limit (no retention or cleanup). What is the retention policy? | |
