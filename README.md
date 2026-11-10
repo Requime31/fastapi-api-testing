@@ -15,8 +15,8 @@
 | Smoke-тестирование | — | ✅ Выполнено |
 | Планирование | [Test Plan](docs/TEST_PLAN.md) | ✅ Готов |
 | Тест-дизайн | [Чек-листы](docs/checklists/) — 381 проверка | ✅ Готовы |
-| Выполнение | Прогон чек-листов, Postman-коллекция | ⏳ В процессе |
-| Трекинг | Jira `FAT` ([эпик цикла FAT-1](../../issues/1)) → зеркало в [Issues](../../issues) | 🔄 Задачи цикла заведены |
+| Выполнение | [CL-01 Auth](docs/checklists/CL-01_Auth.md): 118 проверок — 98 ✅ / 19 ❌ / 1 ⏭ ([результаты](qa/runs/CL-01_2026-11-10.json)); CL-02…CL-04 | 🔄 1 из 4 чек-листов |
+| Трекинг | Jira `FAT` ([эпик цикла FAT-1](../../issues/1)) → зеркало в [Issues](../../issues): [12 багов](../../issues?q=label%3Abug) (4 Major, 7 Minor, 1 Trivial), [4 вопроса](../../issues?q=label%3Aquestion) | 🔄 В процессе |
 | Отчётность | Test Summary Report | ⏳ |
 
 ---
