@@ -1,0 +1,169 @@
+{
+  "executed_by": "QA (Requime31); executed with [`qa/scripts/run_cl02_items.py`](../../qa/scripts/run_cl02_items.py)",
+  "run_date": "10.11.2026 · build `660708b` · raw results [`qa/runs/CL-02_2026-11-10.json`](../../qa/runs/CL-02_2026-11-10.json) · Jira FAT-4 ([#4](https://github.com/Requime31/fastapi-api-testing/issues/4))",
+  "jira_task": 4,
+  "sections": [
+    [
+      "CRT",
+      "1. Create"
+    ],
+    [
+      "MY",
+      "2. Get my items"
+    ],
+    [
+      "PAG",
+      "3. Get all (pagination)"
+    ],
+    [
+      "UPD",
+      "4. Update"
+    ],
+    [
+      "DEL",
+      "5. Delete"
+    ],
+    [
+      "ACC",
+      "6. Access control"
+    ],
+    [
+      "CTR",
+      "7. Contract"
+    ],
+    [
+      "E2E",
+      "8. E2E"
+    ]
+  ],
+  "defects": [
+    {
+      "key": "D-13",
+      "issue": null,
+      "checks": [
+        "PAG-13",
+        "PAG-14",
+        "PAG-15",
+        "DEL-05",
+        "E2E-03"
+      ],
+      "title": "`GET /items/all` returns soft-deleted items and counts them in `total` / `pages`",
+      "severity": "Major"
+    },
+    {
+      "key": "D-14",
+      "issue": null,
+      "checks": [
+        "PAG-16",
+        "PAG-17",
+        "PAG-18",
+        "PAG-19"
+      ],
+      "title": "`GET /items/all`: `page ≤ 0` or `limit ≤ 0` cause `500 Internal Server Error`",
+      "severity": "Major"
+    },
+    {
+      "key": "D-15",
+      "issue": null,
+      "checks": [
+        "PAG-20"
+      ],
+      "title": "`GET /items/all`: no upper bound for `limit` — the whole table can be fetched in one request",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-16",
+      "issue": null,
+      "checks": [
+        "CRT-12",
+        "CRT-14",
+        "UPD-08"
+      ],
+      "title": "Items: an empty or whitespace-only `title` is accepted on create and update",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-17",
+      "issue": null,
+      "checks": [
+        "CRT-04",
+        "MY-06"
+      ],
+      "title": "Item responses expose internal fields (`owner_id`, `is_deleted`, `created_at`, `updated_at`) — `ItemResponse` is not used as `response_model`",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-18",
+      "issue": null,
+      "checks": [
+        "MY-07"
+      ],
+      "title": "`GET /items/` and `GET /items/all` have no `ORDER BY` — the order changes after an update",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-19",
+      "issue": null,
+      "checks": [
+        "CTR-03"
+      ],
+      "title": "Swagger: items endpoints have no descriptions, no error codes (401/403/404) and no response schemas",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-20",
+      "issue": null,
+      "checks": [
+        "CTR-07"
+      ],
+      "title": "Timestamps are returned without a time zone (`2026-11-10T15:11:55.488475`)",
+      "severity": "Trivial"
+    }
+  ],
+  "questions": [
+    {
+      "key": "Q-05",
+      "issue": null,
+      "checks": [
+        "PAG-24"
+      ],
+      "question": "`GET /items/all` shows every user's items (with `owner_id`) to any authenticated user. Is a public list of all items intended?"
+    },
+    {
+      "key": "Q-06",
+      "issue": null,
+      "checks": [
+        "ACC-12"
+      ],
+      "question": "Someone else's item → `403`, a non-existent one → `404`: the difference reveals which ids exist. Should both return `404`?"
+    },
+    {
+      "key": "Q-07",
+      "issue": null,
+      "checks": [
+        "CRT-10"
+      ],
+      "question": "`title` / `description` have no length limit (10,000 characters are accepted). What are the maximum lengths?"
+    }
+  ],
+  "links": {
+    "CRT-24": [
+      13
+    ],
+    "MY-09": [
+      13
+    ],
+    "PAG-23": [
+      13
+    ],
+    "UPD-16": [
+      13
+    ],
+    "DEL-10": [
+      13
+    ],
+    "ACC-14": [
+      23
+    ]
+  }
+}

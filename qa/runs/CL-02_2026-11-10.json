@@ -1,0 +1,595 @@
+{
+  "checklist": "CL-02 Items",
+  "run_id": "1110161147",
+  "date": "2026-11-10T15:11:57.380996+00:00",
+  "environment": "Local (Docker), qa/docker-compose.functional.yml",
+  "app_build": "660708b",
+  "repo_commit": "2f6ca85",
+  "results": {
+    "CRT-01": {
+      "status": "pass",
+      "actual": "201 {\"id\": 3, \"updated_at\": \"2026-11-10T15:11:48.406276\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"First description\", \"title\": \"First item\", \"created_at\": \"2026-11-10T15:11:48.406273\"}",
+      "note": ""
+    },
+    "CRT-02": {
+      "status": "pass",
+      "actual": "owner_id=107 (user 107), is_deleted=f, created_at=2026-11-10 15:11:48.406273, updated_at=2026-11-10 15:11:48.406276, age 0 s",
+      "note": ""
+    },
+    "CRT-03": {
+      "status": "pass",
+      "actual": "ids: 3, 4, 5",
+      "note": ""
+    },
+    "CRT-04": {
+      "status": "fail",
+      "actual": "response fields: ['created_at', 'description', 'id', 'is_deleted', 'owner_id', 'title', 'updated_at']",
+      "note": "internal fields are returned: ['created_at', 'is_deleted', 'owner_id', 'updated_at']; the ItemResponse schema is not used as response_model"
+    },
+    "CRT-05": {
+      "status": "pass",
+      "actual": "item 3 in GET /items/: True",
+      "note": ""
+    },
+    "CRT-06": {
+      "status": "pass",
+      "actual": "codes: [201, 201]",
+      "note": ""
+    },
+    "CRT-07": {
+      "status": "pass",
+      "actual": "(code, stored title) = [(201, 'Заметка 📝'), (201, '日本語')]",
+      "note": ""
+    },
+    "CRT-08": {
+      "status": "pass",
+      "actual": "201; stored = <>&\"'/\\%",
+      "note": ""
+    },
+    "CRT-09": {
+      "status": "pass",
+      "actual": "201 {\"id\": 11, \"updated_at\": \"2026-11-10T15:11:48.793128\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"b\", \"title\": \"a\", \"created_at\": \"2026-11-10T15:11:48.793126\"}",
+      "note": ""
+    },
+    "CRT-10": {
+      "status": "pass",
+      "actual": "length → code: {1000: 201, 10000: 201}",
+      "note": "no length limit: 10,000-character strings are accepted"
+    },
+    "CRT-11": {
+      "status": "pass",
+      "actual": "logs: ['INFO', 'item_created', '/items/', 'POST', '201', '107']",
+      "note": ""
+    },
+    "CRT-12": {
+      "status": "fail",
+      "actual": "201 {\"id\": 14, \"updated_at\": \"2026-11-10T15:11:48.875627\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"desc\", \"title\": \"\", \"created_at\": \"2026-11-10T15:11:48.875625\"}",
+      "note": "an item with an empty title is created"
+    },
+    "CRT-13": {
+      "status": "pass",
+      "actual": "201 {\"id\": 15, \"updated_at\": \"2026-11-10T15:11:48.881488\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"\", \"title\": \"Title\", \"created_at\": \"2026-11-10T15:11:48.881486\"}",
+      "note": "an empty description is accepted"
+    },
+    "CRT-14": {
+      "status": "fail",
+      "actual": "201 {\"id\": 16, \"updated_at\": \"2026-11-10T15:11:48.886734\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"desc\", \"title\": \"   \", \"created_at\": \"2026-11-10T15:11:48.886732\"}",
+      "note": "a whitespace-only title is accepted"
+    },
+    "CRT-15": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"missing\", \"loc\": [\"body\", \"title\"], \"msg\": \"Field required\", \"input\": {\"description\": \"d\"}}]}",
+      "note": ""
+    },
+    "CRT-16": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"missing\", \"loc\": [\"body\", \"description\"], \"msg\": \"Field required\", \"input\": {\"title\": \"t\"}}]}",
+      "note": ""
+    },
+    "CRT-17": {
+      "status": "pass",
+      "actual": "422; loc = [['body', 'title'], ['body', 'description']]",
+      "note": ""
+    },
+    "CRT-18": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"string_type\", \"loc\": [\"body\", \"title\"], \"msg\": \"Input should be a valid string\", \"input\": null}]}",
+      "note": ""
+    },
+    "CRT-19": {
+      "status": "pass",
+      "actual": "{'123': 422, 'True': 422, \"['a']\": 422, '{}': 422}",
+      "note": ""
+    },
+    "CRT-20": {
+      "status": "pass",
+      "actual": "broken JSON → 422, text/plain → 422",
+      "note": ""
+    },
+    "CRT-21": {
+      "status": "pass",
+      "actual": "201; id=17, owner_id=107, is_deleted=f",
+      "note": ""
+    },
+    "CRT-22": {
+      "status": "pass",
+      "actual": "201 {\"id\": 18, \"updated_at\": \"2026-11-10T15:11:48.984833\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"x\", \"title\": \"<script>alert(1)</script>\", \"created_at\": \"2026-11-10T15:11:48.984827\"}",
+      "note": "HTML/JS is stored and returned as is — stored XSS risk for a future frontend (output encoding is the frontend's job)"
+    },
+    "CRT-23": {
+      "status": "pass",
+      "actual": "201; items table exists: t",
+      "note": ""
+    },
+    "CRT-24": {
+      "status": "pass",
+      "actual": "403 {\"detail\": \"Not authenticated\"}; items 19→19",
+      "note": "403 instead of 401 — same root cause as FAT-13"
+    },
+    "CRT-25": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": ""
+    },
+    "CRT-26": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": ""
+    },
+    "MY-01": {
+      "status": "pass",
+      "actual": "200 []",
+      "note": ""
+    },
+    "MY-02": {
+      "status": "pass",
+      "actual": "created [20, 21, 22], returned [20, 21, 22]",
+      "note": ""
+    },
+    "MY-03": {
+      "status": "pass",
+      "actual": "overlaps A∩C=0, B∩C=0, A∩B=0",
+      "note": ""
+    },
+    "MY-04": {
+      "status": "pass",
+      "actual": "deleted 20 in list: False",
+      "note": ""
+    },
+    "MY-05": {
+      "status": "pass",
+      "actual": "item 21: 'C1 updated'",
+      "note": ""
+    },
+    "MY-06": {
+      "status": "fail",
+      "actual": "element fields: ['created_at', 'description', 'id', 'is_deleted', 'owner_id', 'title', 'updated_at']",
+      "note": "internal fields are returned (owner_id, is_deleted, timestamps)"
+    },
+    "MY-07": {
+      "status": "fail",
+      "actual": "order after an update: [22, 21]",
+      "note": "no ORDER BY: an updated row moves to the end — the order is not deterministic"
+    },
+    "MY-08": {
+      "status": "pass",
+      "actual": "100 items returned: 100, 5 ms",
+      "note": "the endpoint has no pagination — the response grows with the number of items"
+    },
+    "MY-09": {
+      "status": "pass",
+      "actual": "403 {\"detail\": \"Not authenticated\"}",
+      "note": "403 instead of 401 — see FAT-13"
+    },
+    "MY-10": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": ""
+    },
+    "MY-11": {
+      "status": "pass",
+      "actual": "?owner_id=<User A> → returned own items only: True",
+      "note": ""
+    },
+    "MY-12": {
+      "status": "pass",
+      "actual": "307",
+      "note": "redirect to http://localhost:8000/items/; following with the same Authorization → 200"
+    },
+    "PAG-12": {
+      "status": "pass",
+      "actual": "200 {\"page\": 1, \"limit\": 10, \"total\": 0, \"pages\": 0, \"data\": []}",
+      "note": ""
+    },
+    "PAG-01": {
+      "status": "pass",
+      "actual": "page=1, limit=10, total=25, pages=3, len(data)=10",
+      "note": ""
+    },
+    "PAG-02": {
+      "status": "pass",
+      "actual": "keys=['data', 'limit', 'page', 'pages', 'total'], types ok=True",
+      "note": ""
+    },
+    "PAG-03": {
+      "status": "pass",
+      "actual": "page 2: 10 items, overlap with page 1: 0",
+      "note": ""
+    },
+    "PAG-04": {
+      "status": "pass",
+      "actual": "page 3: 5 items",
+      "note": ""
+    },
+    "PAG-05": {
+      "status": "pass",
+      "actual": "25 ids, 25 unique, all created present: True",
+      "note": ""
+    },
+    "PAG-06": {
+      "status": "pass",
+      "actual": "200 {\"page\": 4, \"limit\": 10, \"total\": 25, \"pages\": 3, \"data\": []}",
+      "note": ""
+    },
+    "PAG-07": {
+      "status": "pass",
+      "actual": "len=1, pages=25",
+      "note": ""
+    },
+    "PAG-08": {
+      "status": "pass",
+      "actual": "len=25, pages=1",
+      "note": ""
+    },
+    "PAG-09": {
+      "status": "pass",
+      "actual": "len=25, pages=1",
+      "note": ""
+    },
+    "PAG-10": {
+      "status": "pass",
+      "actual": "User A items: 15, User B items: 10",
+      "note": ""
+    },
+    "PAG-11": {
+      "status": "pass",
+      "actual": "two identical requests return the same order: True",
+      "note": "the query has no ORDER BY — stable here, but PostgreSQL does not guarantee the order (e.g. after updates)"
+    },
+    "PAG-13": {
+      "status": "fail",
+      "actual": "deleted items still in data: 5 of 5",
+      "note": "soft-deleted items are returned by /items/all (no is_deleted filter)"
+    },
+    "PAG-14": {
+      "status": "fail",
+      "actual": "total after deleting 5 = 25, pages = 1",
+      "note": "total counts soft-deleted items"
+    },
+    "PAG-15": {
+      "status": "fail",
+      "actual": "User A: GET /items/ → 10, User A items in /items/all → 15",
+      "note": ""
+    },
+    "PAG-16": {
+      "status": "fail",
+      "actual": "page=0 → 500 Internal Server Error",
+      "note": "unhandled server error (no input validation)"
+    },
+    "PAG-17": {
+      "status": "fail",
+      "actual": "page=-1 → 500 Internal Server Error",
+      "note": "unhandled server error (no input validation)"
+    },
+    "PAG-18": {
+      "status": "fail",
+      "actual": "limit=0 → 500 Internal Server Error",
+      "note": "unhandled server error (no input validation)"
+    },
+    "PAG-19": {
+      "status": "fail",
+      "actual": "limit=-5 → 500 Internal Server Error",
+      "note": "unhandled server error (no input validation)"
+    },
+    "PAG-20": {
+      "status": "fail",
+      "actual": "limit=100000 → 200, limit in response=100000, returned 25 (all rows)",
+      "note": "no upper bound on limit: the whole table can be fetched in one request"
+    },
+    "PAG-21": {
+      "status": "pass",
+      "actual": "{'page=abc': 422, 'limit=1.5': 422, 'page=': 422}",
+      "note": ""
+    },
+    "PAG-22": {
+      "status": "pass",
+      "actual": "200 {\"page\": 999999999999, \"limit\": 10, \"total\": 25, \"pages\": 3, \"data\": []}",
+      "note": ""
+    },
+    "PAG-23": {
+      "status": "pass",
+      "actual": "403 {\"detail\": \"Not authenticated\"}",
+      "note": "403 instead of 401 — see FAT-13"
+    },
+    "PAG-24": {
+      "status": "pass",
+      "actual": "element fields: ['created_at', 'description', 'id', 'is_deleted', 'owner_id', 'title', 'updated_at']",
+      "note": "any user sees all users' items with ['owner_id'] — confirm that a public list of all items is intended"
+    },
+    "UPD-01": {
+      "status": "pass",
+      "actual": "200 {\"id\": 148, \"updated_at\": \"2026-11-10T15:11:52.435255\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"after\", \"title\": \"After\", \"created_at\": \"2026-11-10T15:11:51.356079\"}",
+      "note": ""
+    },
+    "UPD-02": {
+      "status": "pass",
+      "actual": "owner_id=107, title=After, created_at unchanged=True, updated_at > created_at: t",
+      "note": ""
+    },
+    "UPD-03": {
+      "status": "pass",
+      "actual": "200 {\"id\": 148, \"updated_at\": \"2026-11-10T15:11:52.435255\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"after\", \"title\": \"After\", \"created_at\": \"2026-11-10T15:11:51.356079\"}",
+      "note": ""
+    },
+    "UPD-04": {
+      "status": "pass",
+      "actual": "title in DB = V2",
+      "note": ""
+    },
+    "UPD-05": {
+      "status": "pass",
+      "actual": "logs: ['INFO', 'item_updated', '/items/148', 'PUT', '200', '107']",
+      "note": ""
+    },
+    "UPD-06": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"missing\", \"loc\": [\"body\", \"description\"], \"msg\": \"Field required\", \"input\": {\"title\": \"Only title\"}}]}",
+      "note": ""
+    },
+    "UPD-07": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"missing\", \"loc\": [\"body\", \"title\"], \"msg\": \"Field required\", \"input\": {}}, {\"type\": \"missing\", \"loc\": [\"body\", \"description\"], \"msg\": \"Field required\", \"input\": {}}]}",
+      "note": ""
+    },
+    "UPD-08": {
+      "status": "fail",
+      "actual": "title → code: {\"''\": 200, 'None': 422, '123': 422}",
+      "note": "an empty title is accepted on update as well (same as CRT-12)"
+    },
+    "UPD-09": {
+      "status": "pass",
+      "actual": "200; owner_id in DB = 107",
+      "note": ""
+    },
+    "UPD-10": {
+      "status": "pass",
+      "actual": "404; is_deleted=t",
+      "note": ""
+    },
+    "UPD-12": {
+      "status": "pass",
+      "actual": "404 {\"detail\": \"Item not found\"}; title in DB unchanged: True",
+      "note": ""
+    },
+    "UPD-11": {
+      "status": "pass",
+      "actual": "404 {\"detail\": \"Item not found\"}",
+      "note": ""
+    },
+    "UPD-13": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"int_parsing\", \"loc\": [\"path\", \"item_id\"], \"msg\": \"Input should be a valid inte",
+      "note": ""
+    },
+    "UPD-14": {
+      "status": "pass",
+      "actual": "{0: 404, -1: 404}",
+      "note": ""
+    },
+    "UPD-15": {
+      "status": "pass",
+      "actual": "404 {\"detail\": \"Item not found\"}",
+      "note": ""
+    },
+    "UPD-16": {
+      "status": "pass",
+      "actual": "403; title unchanged: True",
+      "note": "403 instead of 401 — see FAT-13"
+    },
+    "UPD-17": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}; title unchanged: True",
+      "note": ""
+    },
+    "DEL-01": {
+      "status": "pass",
+      "actual": "204 ",
+      "note": ""
+    },
+    "DEL-02": {
+      "status": "pass",
+      "actual": "body=b'', Content-Length=None",
+      "note": ""
+    },
+    "DEL-03": {
+      "status": "pass",
+      "actual": "record exists: True, is_deleted=t",
+      "note": ""
+    },
+    "DEL-04": {
+      "status": "pass",
+      "actual": "deleted item in GET /items/: False",
+      "note": ""
+    },
+    "DEL-05": {
+      "status": "fail",
+      "actual": "in /items/all: True; total 127 → 127",
+      "note": "the deleted item stays in /items/all and in total (see PAG-13/14)"
+    },
+    "DEL-06": {
+      "status": "pass",
+      "actual": "404 {\"detail\": \"Item not found\"}",
+      "note": ""
+    },
+    "DEL-07": {
+      "status": "pass",
+      "actual": "other items still listed: True",
+      "note": ""
+    },
+    "DEL-08": {
+      "status": "pass",
+      "actual": "404 {\"detail\": \"Item not found\"}",
+      "note": ""
+    },
+    "DEL-09": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"int_parsing\", \"loc\": [\"path\", \"item_id\"], \"msg\": \"Input should be a valid inte",
+      "note": ""
+    },
+    "DEL-10": {
+      "status": "pass",
+      "actual": "403; item not deleted: True",
+      "note": "403 instead of 401 — see FAT-13"
+    },
+    "DEL-11": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}; item not deleted: True",
+      "note": ""
+    },
+    "DEL-12": {
+      "status": "pass",
+      "actual": "logs: ['INFO', 'item_deleted', '/items/150', 'DELETE', '204', '107']",
+      "note": ""
+    },
+    "ACC-01": {
+      "status": "pass",
+      "actual": "200 {\"id\": 153, \"updated_at\": \"2026-11-10T15:11:53.359835\", \"is_deleted\": false, \"owner_id\": 107, \"description\": \"d\", \"title\": \"ACC updated\", \"created_at\": \"2026-11-10T15:11:53.354197\"}",
+      "note": ""
+    },
+    "ACC-02": {
+      "status": "pass",
+      "actual": "403 {\"detail\": \"Not your item\"}; data unchanged: True",
+      "note": ""
+    },
+    "ACC-03": {
+      "status": "pass",
+      "actual": "PUT deleted by owner → 404",
+      "note": ""
+    },
+    "ACC-04": {
+      "status": "pass",
+      "actual": "PUT deleted by other user → 404",
+      "note": ""
+    },
+    "ACC-05": {
+      "status": "pass",
+      "actual": "PUT non-existent by other user → 404",
+      "note": ""
+    },
+    "ACC-06": {
+      "status": "pass",
+      "actual": "204; is_deleted=t",
+      "note": ""
+    },
+    "ACC-07": {
+      "status": "pass",
+      "actual": "403 {\"detail\": \"Not your item\"}; is_deleted=f",
+      "note": ""
+    },
+    "ACC-08": {
+      "status": "pass",
+      "actual": "DELETE deleted by owner → 404",
+      "note": ""
+    },
+    "ACC-09": {
+      "status": "pass",
+      "actual": "DELETE deleted by other user → 404",
+      "note": ""
+    },
+    "ACC-10": {
+      "status": "pass",
+      "actual": "DELETE non-existent by other user → 404",
+      "note": ""
+    },
+    "ACC-11": {
+      "status": "pass",
+      "actual": "User B PUT over 22 User A items → codes [403]; data unchanged: True",
+      "note": ""
+    },
+    "ACC-12": {
+      "status": "fail",
+      "actual": "someone else's item → 403, non-existent → 404",
+      "note": "different codes reveal which item ids exist (low risk: ids are also visible in /items/all)"
+    },
+    "ACC-13": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"User not found\"}",
+      "note": ""
+    },
+    "ACC-14": {
+      "status": "skip",
+      "actual": "a user with items cannot be deleted: ERROR:  update or delete on table \"users\" violates foreign key constraint \"items_owner_id_fkey\" on table \"item",
+      "note": "FK items.owner_id has no ON DELETE CASCADE — orphan items cannot appear; see FAT-23"
+    },
+    "ACC-15": {
+      "status": "pass",
+      "actual": "logs: ['WARNING', 'item_update_forbidden', '108', '403']",
+      "note": ""
+    },
+    "CTR-01": {
+      "status": "pass",
+      "actual": "GET /items/{id} → 405 {\"detail\": \"Method Not Allowed\"}",
+      "note": "there is no endpoint to fetch a single item"
+    },
+    "CTR-02": {
+      "status": "pass",
+      "actual": "{'PATCH /items/1': 405, 'DELETE /items/': 405, 'PUT /items/': 405}",
+      "note": ""
+    },
+    "CTR-03": {
+      "status": "fail",
+      "actual": "documented codes: {'GET /items/': ['200'], 'POST /items/': ['201', '422'], 'GET /items/all': ['200', '422'], 'PUT /items/{item_id}': ['200', '422'], 'DELETE /items/{item_id}': ['204', '422']}",
+      "note": "items endpoints document only the success code and 422 — no 401/403/404, no response schema"
+    },
+    "CTR-04": {
+      "status": "pass",
+      "actual": "{'POST /items/': 'application/json', 'GET /items/': 'application/json', 'GET /items/all': 'application/json', 'PUT 404': 'application/json', 'DELETE 404': 'application/json'}",
+      "note": ""
+    },
+    "CTR-05": {
+      "status": "pass",
+      "actual": "error responses checked: [500, 500, 422]; with internals: []",
+      "note": "500 responses are plain-text \"Internal Server Error\" without details"
+    },
+    "CTR-06": {
+      "status": "pass",
+      "actual": "median ms: {'POST /items/': 5, 'GET /items/': 4, 'DELETE /items/20': 6, 'PUT /items/21': 5, 'GET /items': 1, 'GET /items/all': 4, 'DELETE /items/123': 5, 'DELETE /items/124': 7, 'DELETE /items/125': 5, 'DELETE /items/126': 6, 'DELETE /items/127': 5, 'PUT /items/148': 5, 'DELETE /items/149': 4, 'PUT /items/149': 4, 'PUT /items/999999999': 4, 'PUT /items/abc': 3, 'PUT /items/0': 4, 'PUT /items/-1': 4, 'PUT /items/99999999999999999999': 4, 'DELETE /items/150': 5, 'DELETE /items/999999999': 3, 'DELETE /items/abc': 3, 'DELETE /items/151': 1, 'PUT /items/153': 6, 'DELETE /items/154': 4, 'PUT /items/154': 3, 'DELETE /items/155': 3, 'DELETE /items/156': 3, 'PUT /items/3': 6, 'PUT /items/4': 4, 'PUT /items/5': 3, 'PUT /items/6': 3, 'PUT /items/7': 3, 'PUT /items/8': 3, 'PUT /items/9': 3, 'PUT /items/10': 4, 'PUT /items/11': 3, 'PUT /items/12': 4, 'PUT /items/13': 4, 'PUT /items/14': 3, 'PUT /items/15': 3, 'PUT /items/16': 3, 'PUT /items/17': 4, 'PUT /items/18': 4, 'PUT /items/19': 4, 'PUT /items/151': 4, 'PUT /items/152': 3, 'PUT /items/156': 6, 'GET /items/158': 1, 'PATCH /items/158': 1, 'DELETE /items/': 1, 'PUT /items/': 1}",
+      "note": ""
+    },
+    "CTR-07": {
+      "status": "fail",
+      "actual": "created_at = '2026-11-10T15:11:55.488475'",
+      "note": "timestamps are returned without a time zone (naive UTC), clients may misinterpret them"
+    },
+    "E2E-01": {
+      "status": "pass",
+      "actual": "create, listed, update, updated, delete, listed → [201, 1, 200, 1, 204, 0]",
+      "note": ""
+    },
+    "E2E-02": {
+      "status": "pass",
+      "actual": "User B PUT / DELETE → [403, 403]; User A item intact: True",
+      "note": ""
+    },
+    "E2E-03": {
+      "status": "fail",
+      "actual": "user's items across all pages: 12 (expected 9), deleted ones visible: 3",
+      "note": "deleted items appear in the paginated list (see PAG-13)"
+    },
+    "E2E-04": {
+      "status": "pass",
+      "actual": "refresh → 200, PUT with new token → 200",
+      "note": ""
+    }
+  }
+}

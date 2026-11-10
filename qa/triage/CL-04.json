@@ -1,0 +1,154 @@
+{
+  "executed_by": "QA (Requime31); executed with [`qa/scripts/run_cl04_health_logs_cors.py`](../../qa/scripts/run_cl04_health_logs_cors.py)",
+  "run_date": "10.11.2026 · build `660708b` · raw results [`qa/runs/CL-04_2026-11-10.json`](../../qa/runs/CL-04_2026-11-10.json) · Jira FAT-6 ([#6](https://github.com/Requime31/fastapi-api-testing/issues/6)) · CR-20 in Chrome (built-in browser)",
+  "jira_task": 6,
+  "sections": [
+    [
+      "HL",
+      "1. Health check"
+    ],
+    [
+      "LG",
+      "2. Logging"
+    ],
+    [
+      "CR",
+      "3. CORS"
+    ],
+    [
+      "DOC",
+      "4. API documentation"
+    ]
+  ],
+  "defects": [
+    {
+      "key": "D-26",
+      "issue": null,
+      "checks": [
+        "HL-17",
+        "HL-19",
+        "HL-20"
+      ],
+      "title": "Alembic migrations fail on every startup and the failure is silent: the initial migration is empty, the schema is created by `create_all`, `alembic_version` never exists",
+      "severity": "Major"
+    },
+    {
+      "key": "D-27",
+      "issue": null,
+      "checks": [
+        "LG-19",
+        "LG-34",
+        "LG-35",
+        "LG-36",
+        "LG-37",
+        "LG-38"
+      ],
+      "title": "No application or uvicorn logs reach the console after startup: `fileConfig()` in `alembic/env.py` disables the existing loggers",
+      "severity": "Major"
+    },
+    {
+      "key": "D-28",
+      "issue": null,
+      "checks": [
+        "HL-11",
+        "HL-12"
+      ],
+      "title": "`GET /health` returns `200` with `\"status\": \"ok\"` when the database is down",
+      "severity": "Major"
+    },
+    {
+      "key": "D-29",
+      "issue": null,
+      "checks": [
+        "HL-07"
+      ],
+      "title": "`HEAD /health` returns `405`",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-30",
+      "issue": null,
+      "checks": [
+        "LG-20",
+        "LG-21",
+        "LG-22",
+        "LG-24"
+      ],
+      "title": "Log records are incomplete: `ip` and `duration_ms` are never filled, `method` / `status_code` are missing for auth events, two message formats",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-25",
+      "issue": null,
+      "checks": [
+        "LG-15",
+        "LG-17"
+      ],
+      "title": "Security events are not logged: failed authentication (invalid / forged token) and rate limit violations (429) leave no record",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-31",
+      "issue": null,
+      "checks": [
+        "CR-18"
+      ],
+      "title": "`500` responses carry no CORS headers — the browser shows a CORS error instead of the server error",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-32",
+      "issue": null,
+      "checks": [
+        "CR-22"
+      ],
+      "title": "Allowed CORS origins are hardcoded in `main.py` (`http://localhost:3000`)",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-33",
+      "issue": null,
+      "checks": [
+        "DOC-16"
+      ],
+      "title": "Setup docs: `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` required by `docker-compose.yml` are missing from the README and `.env.example`",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-19",
+      "issue": null,
+      "checks": [
+        "DOC-06",
+        "DOC-08",
+        "DOC-09"
+      ],
+      "title": "Swagger: items endpoints have no descriptions, no error codes (401/403/404) and no response schemas",
+      "severity": "Minor"
+    }
+  ],
+  "questions": [
+    {
+      "key": "Q-10",
+      "issue": null,
+      "checks": [
+        "LG-33"
+      ],
+      "question": "The `logs` table grows without limit (no retention or cleanup). What is the retention policy?"
+    }
+  ],
+  "links": {
+    "LG-08": [
+      19
+    ],
+    "LG-30": [
+      17
+    ],
+    "DOC-07": [
+      13,
+      22
+    ],
+    "DOC-10": [
+      8
+    ]
+  }
+}

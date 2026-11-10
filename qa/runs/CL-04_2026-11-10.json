@@ -1,0 +1,543 @@
+{
+  "checklist": "CL-04 Health / Logs / CORS / API Docs",
+  "run_id": "1110162549",
+  "date": "2026-11-10T15:26:05.248191+00:00",
+  "environment": "Local (Docker), qa/docker-compose.functional.yml",
+  "app_build": "660708b",
+  "repo_commit": "2f6ca85",
+  "results": {
+    "HL-01": {
+      "status": "pass",
+      "actual": "200 {\"status\": \"ok\", \"database\": \"ok\"}",
+      "note": ""
+    },
+    "HL-02": {
+      "status": "pass",
+      "actual": "no Authorization header → 200",
+      "note": ""
+    },
+    "HL-03": {
+      "status": "pass",
+      "actual": "invalid Bearer token → 200",
+      "note": ""
+    },
+    "HL-04": {
+      "status": "pass",
+      "actual": "keys=['database', 'status'], content-type=application/json",
+      "note": ""
+    },
+    "HL-05": {
+      "status": "pass",
+      "actual": "body: {'status': 'ok', 'database': 'ok'}; headers: server=uvicorn",
+      "note": "no versions or connection details in the body"
+    },
+    "HL-06": {
+      "status": "pass",
+      "actual": "median 2.0 ms over 10 requests",
+      "note": ""
+    },
+    "HL-07": {
+      "status": "fail",
+      "actual": "HEAD /health → 405",
+      "note": "HEAD is not supported — monitoring tools that use HEAD will report the service as down"
+    },
+    "HL-08": {
+      "status": "pass",
+      "actual": "{'POST': 405, 'DELETE': 405}",
+      "note": ""
+    },
+    "HL-09": {
+      "status": "pass",
+      "actual": "/health/ → 307 http://localhost:8000/health",
+      "note": ""
+    },
+    "HL-10": {
+      "status": "pass",
+      "actual": "200 {\"status\": \"ok\", \"database\": \"error\"} in 5 ms",
+      "note": ""
+    },
+    "HL-11": {
+      "status": "fail",
+      "actual": "HTTP 200",
+      "note": "health returns 200 when the database is down — load balancers / monitoring see the service as healthy"
+    },
+    "HL-12": {
+      "status": "fail",
+      "actual": "status = ok",
+      "note": "status stays \"ok\" with the database down"
+    },
+    "HL-13": {
+      "status": "pass",
+      "actual": "response time with the DB down: 5 ms",
+      "note": ""
+    },
+    "HL-14": {
+      "status": "pass",
+      "actual": "body: {'status': 'ok', 'database': 'error'}",
+      "note": ""
+    },
+    "HL-15": {
+      "status": "pass",
+      "actual": "POST /users/login → 500 Internal Server Error; internals in body: False",
+      "note": ""
+    },
+    "HL-16": {
+      "status": "pass",
+      "actual": "database back → /health ok after 1 s without restarting the API",
+      "note": ""
+    },
+    "LG-01": {
+      "status": "pass",
+      "actual": "['INFO', 'New user registered: qa1110162725_lg@test.com', '132']",
+      "note": ""
+    },
+    "LG-02": {
+      "status": "pass",
+      "actual": "['WARNING', 'Registration attempt with existing email: qa1110162725_lg@test.com']",
+      "note": ""
+    },
+    "LG-03": {
+      "status": "pass",
+      "actual": "['INFO', 'User logged in: qa1110162725_lg@test.com', '132']",
+      "note": ""
+    },
+    "LG-04": {
+      "status": "pass",
+      "actual": "['WARNING', 'Failed login attempt for: qa1110162725_lg@test.com', '132']",
+      "note": ""
+    },
+    "LG-05": {
+      "status": "pass",
+      "actual": "['WARNING', 'Login attempt for non-existent email: qa1110162725_nobody@test.com', 'NULL']",
+      "note": ""
+    },
+    "LG-06": {
+      "status": "pass",
+      "actual": "['INFO', 'Token refreshed for user_id: 132', '132']",
+      "note": ""
+    },
+    "LG-07": {
+      "status": "pass",
+      "actual": "['WARNING', 'Invalid or expired refresh token used']",
+      "note": ""
+    },
+    "LG-08": {
+      "status": "fail",
+      "actual": "['INFO', 'User logged out', 'NULL']",
+      "note": "user_id is not set — see FAT-19"
+    },
+    "LG-09": {
+      "status": "pass",
+      "actual": "['INFO', 'All sessions revoked for user_id: 132', '132']",
+      "note": ""
+    },
+    "LG-10": {
+      "status": "pass",
+      "actual": "['INFO', 'item_created', '132', '/items/', 'POST', '201']",
+      "note": ""
+    },
+    "LG-11": {
+      "status": "pass",
+      "actual": "['INFO', 'item_updated', '132', '/items/400', 'PUT', '200']",
+      "note": ""
+    },
+    "LG-12": {
+      "status": "pass",
+      "actual": "['INFO', 'item_deleted', '132', '/items/400', 'DELETE', '204']",
+      "note": ""
+    },
+    "LG-13": {
+      "status": "pass",
+      "actual": "['WARNING', 'item_not_found', '132', '/items/999999999', 'PUT', '404']",
+      "note": ""
+    },
+    "LG-14": {
+      "status": "pass",
+      "actual": "['WARNING', 'item_delete_forbidden', '132', '/items/401', 'DELETE', '403']",
+      "note": ""
+    },
+    "LG-15": {
+      "status": "fail",
+      "actual": "request with an invalid token → new log records: 0",
+      "note": "failed authentication (invalid / forged token) is not logged"
+    },
+    "LG-16": {
+      "status": "pass",
+      "actual": "422 validation error → new log records: 0",
+      "note": "validation errors are not logged (acceptable)"
+    },
+    "LG-17": {
+      "status": "fail",
+      "actual": "see CL-03 RL-39: rate limit violations are not written to logs or the console",
+      "note": ""
+    },
+    "LG-18": {
+      "status": "pass",
+      "actual": "read operations → new log records: 0",
+      "note": "read operations are not logged (acceptable)"
+    },
+    "LG-19": {
+      "status": "fail",
+      "actual": "console lines during the DB outage: ERROR/Exception lines 0, structured JSON ERROR: False",
+      "note": "nothing is written: the 500 leaves no trace in the console (app and uvicorn loggers are disabled by alembic's fileConfig)"
+    },
+    "LG-20": {
+      "status": "fail",
+      "actual": "records with ip: 0 of 1562",
+      "note": "ip is never filled"
+    },
+    "LG-21": {
+      "status": "fail",
+      "actual": "records with duration_ms: 0 of 1562",
+      "note": "duration_ms is never filled"
+    },
+    "LG-22": {
+      "status": "fail",
+      "actual": "auth records with method/status_code: 0 of 1019; items records: always set",
+      "note": "method and status_code are filled only for items events"
+    },
+    "LG-23": {
+      "status": "pass",
+      "actual": "records whose status_code differs from the actual response: 0",
+      "note": ""
+    },
+    "LG-24": {
+      "status": "fail",
+      "actual": "message styles: free text with email (\"User logged in: user@…\") vs event codes (All sessions revoked for user_id: 132, Invalid or expired refresh token used, item_created)",
+      "note": "two different message formats in one table make filtering and alerting harder"
+    },
+    "LG-25": {
+      "status": "pass",
+      "actual": "levels: ['WARNING', 'INFO']",
+      "note": ""
+    },
+    "LG-26": {
+      "status": "pass",
+      "actual": "max age of this run's records 3 s (UTC), ordered by time: t",
+      "note": ""
+    },
+    "LG-27": {
+      "status": "pass",
+      "actual": "one registration → 1 log record(s)",
+      "note": ""
+    },
+    "LG-28": {
+      "status": "pass",
+      "actual": "passwords in logs table: 0; in console: False",
+      "note": ""
+    },
+    "LG-29": {
+      "status": "pass",
+      "actual": "JWT in logs table: 0; tokens in console: False",
+      "note": ""
+    },
+    "LG-30": {
+      "status": "fail",
+      "actual": "records of this run containing an email: 10",
+      "note": "plain-text emails in logs — see FAT-17"
+    },
+    "LG-31": {
+      "status": "pass",
+      "actual": "<script>@x.com → 422, 300-char email → 422",
+      "note": "invalid emails are rejected by validation before logging, so arbitrary strings cannot reach the log"
+    },
+    "LG-32": {
+      "status": "pass",
+      "actual": "email with a newline / JSON fragment → 422",
+      "note": "rejected by email validation"
+    },
+    "LG-33": {
+      "status": "fail",
+      "actual": "logs table: 1563 rows since 2026-11-05 14:15:27.205972; no retention / cleanup in the code",
+      "note": "the table grows without limit — retention policy to be clarified"
+    },
+    "LG-34": {
+      "status": "fail",
+      "actual": "container log: 165 lines in total, JSON lines: 0, invalid: 0",
+      "note": "no application log line reaches the console: logging.config.fileConfig() in alembic/env.py runs at startup (run_migrations) and disables the already created 'app' and uvicorn loggers"
+    },
+    "LG-35": {
+      "status": "fail",
+      "actual": "JSON lines to check: 0",
+      "note": "cannot be verified — no JSON lines in the console (LG-34)"
+    },
+    "LG-36": {
+      "status": "fail",
+      "actual": "item_created line in the console: None",
+      "note": "cannot be verified — no JSON lines in the console (LG-34)"
+    },
+    "LG-37": {
+      "status": "fail",
+      "actual": "console None vs DB ('INFO', '132')",
+      "note": "the event is in the DB but not in the console (LG-34)"
+    },
+    "LG-38": {
+      "status": "fail",
+      "actual": "non-JSON lines in the stream: 165 (e.g. INFO  [alembic.runtime.migration] Running upgrade 2317e5de5f12 -> 1244)",
+      "note": "the only lines in the stream are alembic's plain-text startup messages; uvicorn access logs are suppressed together with the app logger (LG-34)"
+    },
+    "CR-01": {
+      "status": "pass",
+      "actual": "200; ACAO=http://localhost:3000, ACAC=true, methods=GET, POST, PUT, DELETE",
+      "note": ""
+    },
+    "CR-02": {
+      "status": "pass",
+      "actual": "Allow-Headers: Authorization, Content-Type",
+      "note": ""
+    },
+    "CR-03": {
+      "status": "pass",
+      "actual": "{'PUT': 200, 'DELETE': 200}",
+      "note": ""
+    },
+    "CR-04": {
+      "status": "pass",
+      "actual": "ACAO=http://localhost:3000, ACAC=true",
+      "note": ""
+    },
+    "CR-05": {
+      "status": "pass",
+      "actual": "ACAO=http://localhost:3000, Set-Cookie present: True",
+      "note": ""
+    },
+    "CR-06": {
+      "status": "pass",
+      "actual": "Allow-Origin values seen: ['http://localhost:3000']",
+      "note": ""
+    },
+    "CR-07": {
+      "status": "pass",
+      "actual": "Vary: Origin",
+      "note": ""
+    },
+    "CR-08": {
+      "status": "pass",
+      "actual": "Access-Control-Max-Age: 600",
+      "note": ""
+    },
+    "CR-09": {
+      "status": "pass",
+      "actual": "400 Disallowed CORS origin; ACAO=None",
+      "note": ""
+    },
+    "CR-10": {
+      "status": "pass",
+      "actual": "200; ACAO=None",
+      "note": ""
+    },
+    "CR-11": {
+      "status": "pass",
+      "actual": "allowed among look-alikes: none",
+      "note": ""
+    },
+    "CR-12": {
+      "status": "pass",
+      "actual": "Origin: null → 400, ACAO=None",
+      "note": ""
+    },
+    "CR-13": {
+      "status": "pass",
+      "actual": "Origin: http://LOCALHOST:3000 → 400, ACAO=None",
+      "note": "origin matching is case-sensitive"
+    },
+    "CR-14": {
+      "status": "pass",
+      "actual": "400 Disallowed CORS method",
+      "note": ""
+    },
+    "CR-15": {
+      "status": "pass",
+      "actual": "X-Custom → 200, Allow-Headers=X-Custom",
+      "note": "allow_headers=* accepts any request header — broader than needed (Authorization, Content-Type)"
+    },
+    "CR-16": {
+      "status": "pass",
+      "actual": "401; ACAO=http://localhost:3000",
+      "note": ""
+    },
+    "CR-17": {
+      "status": "pass",
+      "actual": "429; ACAO=http://localhost:3000",
+      "note": ""
+    },
+    "CR-18": {
+      "status": "fail",
+      "actual": "500 (DB down, HL-15) with the allowed Origin → ACAO=None",
+      "note": "500 responses carry no CORS headers — the browser reports a CORS error instead of the server error"
+    },
+    "CR-19": {
+      "status": "pass",
+      "actual": "110 × preflight → [200]",
+      "note": "preflight requests are answered by CORSMiddleware before the rate limiter"
+    },
+    "CR-20": {
+      "status": "pass",
+      "actual": "Chrome (built-in browser): fetch from http://localhost:3000 → GET /health 200, GET /items/ with Authorization (preflight) → 401 readable; from http://localhost:8080 → TypeError: Failed to fetch, console: \"blocked by CORS policy: No Access-Control-Allow-Origin header\"",
+      "note": ""
+    },
+    "CR-21": {
+      "status": "pass",
+      "actual": "no Origin → 200, ACAO absent: True",
+      "note": ""
+    },
+    "CR-22": {
+      "status": "fail",
+      "actual": "app/main.py: allow_origins=[\"http://localhost:3000\"] (hardcoded)",
+      "note": "allowed origins are hardcoded — any other environment needs a code change and a new release"
+    },
+    "DOC-01": {
+      "status": "pass",
+      "actual": "/docs → 200, Swagger UI page: True",
+      "note": ""
+    },
+    "DOC-02": {
+      "status": "pass",
+      "actual": "/redoc → 200",
+      "note": ""
+    },
+    "DOC-03": {
+      "status": "pass",
+      "actual": "/openapi.json → 200, openapi 3.1.0, valid: True ",
+      "note": ""
+    },
+    "DOC-04": {
+      "status": "pass",
+      "actual": "11 operations, missing: none; tags: ['Health', 'Items', 'Users']",
+      "note": ""
+    },
+    "DOC-05": {
+      "status": "pass",
+      "actual": "info.version = 1.7.0",
+      "note": ""
+    },
+    "DOC-06": {
+      "status": "fail",
+      "actual": "operations without a description: ['DELETE /items/{item_id}', 'GET /items/', 'GET /items/all', 'POST /items/', 'PUT /items/{item_id}']",
+      "note": "items endpoints have only auto-generated summaries and no descriptions (Roadmap v1.7 marks this as done)"
+    },
+    "DOC-07": {
+      "status": "fail",
+      "actual": "login: 200/401/404 reproduced; logout-all documents 401 but returns 403 without a token (FAT-13); refresh/logout document an unreachable 422 (FAT-22); items endpoints document no error codes (CL-02 CTR-03)",
+      "note": ""
+    },
+    "DOC-08": {
+      "status": "fail",
+      "actual": "operations whose success response schema is empty: ['DELETE /items/{item_id}', 'GET /health', 'GET /items/', 'GET /items/all', 'POST /items/', 'POST /users/login', 'POST /users/logout', 'POST /users/logout-all', 'POST /users/refresh', 'POST /users/register', 'PUT /items/{item_id}']",
+      "note": "no response_model — clients get no response schema"
+    },
+    "DOC-09": {
+      "status": "fail",
+      "actual": "/items/all params: {'page': {'type': 'integer', 'default': 1, 'title': 'Page'}, 'limit': {'type': 'integer', 'default': 10, 'title': 'Limit'}}",
+      "note": "no minimum / maximum constraints (see PAG-16…PAG-20)"
+    },
+    "DOC-10": {
+      "status": "fail",
+      "actual": "UserCreate.password schema: {'type': 'string', 'title': 'Password'}",
+      "note": "the 6-character minimum exists only in the description text (see FAT-8)"
+    },
+    "DOC-11": {
+      "status": "pass",
+      "actual": "securitySchemes: ['HTTPBearer']; operations with security: 6",
+      "note": ""
+    },
+    "DOC-12": {
+      "status": "pass",
+      "actual": "Bearer token as sent by the Authorize button → GET /items/ 200",
+      "note": "verified at the API level; the Authorize dialog itself was checked in the browser"
+    },
+    "DOC-13": {
+      "status": "pass",
+      "actual": "operations with a documented cookie parameter: ['POST /users/refresh', 'POST /users/logout']",
+      "note": "refresh_token is documented as a cookie parameter, but Swagger UI cannot send cookie parameters — these endpoints work from the UI only with the cookie the browser received from /users/login"
+    },
+    "DOC-14": {
+      "status": "pass",
+      "actual": "contact={'name': 'nisanMan', 'url': 'https://github.com/nisanMan/fastapi-project'}, license={'name': 'MIT'}, repo link → 200",
+      "note": ""
+    },
+    "DOC-15": {
+      "status": "pass",
+      "actual": "README endpoint table vs OpenAPI — differences: none",
+      "note": ""
+    },
+    "DOC-16": {
+      "status": "fail",
+      "actual": "variables required by docker-compose.yml but absent from the README table and .env.example (build 660708b): ['POSTGRES_DB', 'POSTGRES_PASSWORD', 'POSTGRES_USER']",
+      "note": "following the README (cp .env.example .env → docker-compose up) the db container gets no credentials and the stand does not start"
+    },
+    "HL-17": {
+      "status": "fail",
+      "actual": "alembic_version table exists: False, version=None, head=08621c7ff5c6; manual `alembic upgrade head` → exit 1: sqlalchemy.exc.ProgrammingError: (psycopg2.errors.DuplicateColumn) column \"phone\" of relation \"users\" already exists; startup log line: none",
+      "note": "migrations fail on every startup and the failure is silent: the initial migration 2317e5de5f12 is empty, so the chain cannot build the schema (the 2nd migration hits an existing / missing users table); the schema is created by Base.metadata.create_all instead and alembic_version never exists. \"Migration failed\" is not visible because alembic's fileConfig disables the app logger"
+    },
+    "HL-18": {
+      "status": "pass",
+      "actual": "API restarted with the DB down → container exited exit=1; last log: (Background on this error at: https://sqlalche.me/e/20/e3q8)",
+      "note": "the app crashes on startup (create_all fails) and the container stays down until restarted manually; stand restored: True"
+    },
+    "HL-19": {
+      "status": "fail",
+      "actual": "fresh stack with an empty volume: /health ok=True after 4 s, tables=4, alembic_version=none; last migration step in the log: api-1  | INFO  [alembic.runtime.migration] Running upgrade 2317e5de5f12 -> 1244c36eb4e3, a",
+      "note": "on a clean database the app starts only thanks to create_all — the migration chain itself fails"
+    },
+    "HL-20": {
+      "status": "fail",
+      "actual": "alembic check → exit 255: ERROR [alembic.util.messaging] Target database is not up to date.",
+      "note": "alembic check cannot compare the schema with the models: the database has no alembic_version (the migration chain never completes — see HL-17)"
+    }
+  },
+  "reruns": [
+    {
+      "run_id": "1110162725",
+      "sections": [
+        "s_startup",
+        "s_logging"
+      ],
+      "checks": [
+        "HL-17",
+        "HL-18",
+        "HL-19",
+        "HL-20",
+        "LG-01",
+        "LG-02",
+        "LG-03",
+        "LG-04",
+        "LG-05",
+        "LG-06",
+        "LG-07",
+        "LG-08",
+        "LG-09",
+        "LG-10",
+        "LG-11",
+        "LG-12",
+        "LG-13",
+        "LG-14",
+        "LG-15",
+        "LG-16",
+        "LG-17",
+        "LG-18",
+        "LG-19",
+        "LG-20",
+        "LG-21",
+        "LG-22",
+        "LG-23",
+        "LG-24",
+        "LG-25",
+        "LG-26",
+        "LG-27",
+        "LG-28",
+        "LG-29",
+        "LG-30",
+        "LG-31",
+        "LG-32",
+        "LG-33",
+        "LG-34",
+        "LG-35",
+        "LG-36",
+        "LG-37",
+        "LG-38"
+      ]
+    }
+  ]
+}

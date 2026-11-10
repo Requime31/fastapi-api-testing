@@ -1,0 +1,106 @@
+{
+  "executed_by": "QA (Requime31); executed with [`qa/scripts/run_cl03_rate_limit.py`](../../qa/scripts/run_cl03_rate_limit.py)",
+  "run_date": "10.11.2026 · build `660708b` · raw results [`qa/runs/CL-03_2026-11-10.json`](../../qa/runs/CL-03_2026-11-10.json) · Jira FAT-5 ([#5](https://github.com/Requime31/fastapi-api-testing/issues/5)) · stand with default limits",
+  "jira_task": 5,
+  "sections": [
+    [
+      "RL-01..RL-12",
+      "1. Limits per endpoint"
+    ],
+    [
+      "RL-13..RL-20",
+      "2. 429 format"
+    ],
+    [
+      "RL-21..RL-25",
+      "3. Window and reset"
+    ],
+    [
+      "RL-26..RL-32",
+      "4. Counter independence"
+    ],
+    [
+      "RL-33..RL-39",
+      "5. Which requests are counted"
+    ],
+    [
+      "RL-40..RL-47",
+      "6. Configuration and bypass"
+    ],
+    [
+      "E2E",
+      "7. Scenarios"
+    ]
+  ],
+  "defects": [
+    {
+      "key": "D-21",
+      "issue": null,
+      "checks": [
+        "RL-11"
+      ],
+      "title": "Write rate limit is counted per URL path: `PUT` / `DELETE` on different `/items/{id}` are not limited",
+      "severity": "Major"
+    },
+    {
+      "key": "D-22",
+      "issue": null,
+      "checks": [
+        "RL-34",
+        "RL-36",
+        "RL-37"
+      ],
+      "title": "Requests rejected by body validation (422) or authentication (401/403) are not rate-limited",
+      "severity": "Major"
+    },
+    {
+      "key": "D-23",
+      "issue": null,
+      "checks": [
+        "RL-15",
+        "RL-17",
+        "RL-18",
+        "RL-19"
+      ],
+      "title": "`429` response: no `Retry-After` / `X-RateLimit-*` headers, `{\"error\"}` format instead of `{\"detail\"}`, not documented in Swagger",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-24",
+      "issue": null,
+      "checks": [
+        "RL-42"
+      ],
+      "title": "An invalid rate limit value in `.env` (`LOGIN_RATE_LIMIT=abc`) silently disables the limit",
+      "severity": "Minor"
+    },
+    {
+      "key": "D-25",
+      "issue": null,
+      "checks": [
+        "RL-39"
+      ],
+      "title": "Security events are not logged: failed authentication (invalid / forged token) and rate limit violations (429) leave no record",
+      "severity": "Minor"
+    }
+  ],
+  "questions": [
+    {
+      "key": "Q-08",
+      "issue": null,
+      "checks": [
+        "RL-32"
+      ],
+      "question": "There is no per-account limit or lockout: each additional client IP gets 5 more password attempts per minute. Is account lockout planned?"
+    },
+    {
+      "key": "Q-09",
+      "issue": null,
+      "checks": [
+        "RL-47",
+        "RL-46"
+      ],
+      "question": "The limit key is `request.client.host` and uvicorn runs without `--proxy-headers`: behind a reverse proxy all users share one limit. How will the API be deployed?"
+    }
+  ]
+}

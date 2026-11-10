@@ -1,0 +1,291 @@
+{
+  "checklist": "CL-03 Rate Limiting",
+  "run_id": "1110161440",
+  "date": "2026-11-10T15:22:12.393629+00:00",
+  "environment": "Local (Docker), default limits from .env",
+  "app_build": "660708b",
+  "repo_commit": "2f6ca85",
+  "results": {
+    "RL-01": {
+      "status": "pass",
+      "actual": "codes: [401, 401, 401, 401, 401, 429]",
+      "note": ""
+    },
+    "RL-02": {
+      "status": "pass",
+      "actual": "codes: [201, 201, 201, 429]; 4th user in DB: 0",
+      "note": ""
+    },
+    "RL-03": {
+      "status": "pass",
+      "actual": "1–100: [401], 101st: 429",
+      "note": ""
+    },
+    "RL-04": {
+      "status": "pass",
+      "actual": "1–100: [401], 101st: 429",
+      "note": ""
+    },
+    "RL-05": {
+      "status": "pass",
+      "actual": "1–100: [200], 101st: 429",
+      "note": ""
+    },
+    "RL-06": {
+      "status": "pass",
+      "actual": "1–100: [200], 101st: 429",
+      "note": ""
+    },
+    "RL-07": {
+      "status": "pass",
+      "actual": "1–60: [200], 61st: 429",
+      "note": ""
+    },
+    "RL-08": {
+      "status": "pass",
+      "actual": "1–60: [200], 61st: 429",
+      "note": ""
+    },
+    "RL-09": {
+      "status": "pass",
+      "actual": "1–30: [201], 31st: 429; created: 30",
+      "note": ""
+    },
+    "RL-10": {
+      "status": "pass",
+      "actual": "1–30: [200], 31st: 429; title = v29",
+      "note": ""
+    },
+    "RL-11": {
+      "status": "fail",
+      "actual": "1–30: [204], 31st: 204; 31st item not deleted: False",
+      "note": "the limit counter is kept per URL path (slowapi key_style='url'): every /items/{id} has its own counter, so PUT / DELETE across different items are not limited. Confirmed separately: 31 PUTs to 31 different ids → all 200; 31 DELETEs to the same id → 31st 429"
+    },
+    "RL-12": {
+      "status": "pass",
+      "actual": "/docs 101st → 429, /openapi.json 101st → 429",
+      "note": "default_limits (100/minute) applies to undecorated endpoints via SlowAPIMiddleware"
+    },
+    "RL-13": {
+      "status": "pass",
+      "actual": "429 {\"error\": \"Rate limit exceeded: 5 per 1 minute\"}",
+      "note": ""
+    },
+    "RL-14": {
+      "status": "pass",
+      "actual": "429 {\"error\": \"Rate limit exceeded: 5 per 1 minute\"}",
+      "note": ""
+    },
+    "RL-15": {
+      "status": "fail",
+      "actual": "429 body: {'error': 'Rate limit exceeded: 5 per 1 minute'}; other errors use {\"detail\": …}",
+      "note": "the 429 error format ({\"error\": …}) differs from all other API errors ({\"detail\": …})"
+    },
+    "RL-16": {
+      "status": "pass",
+      "actual": "application/json",
+      "note": ""
+    },
+    "RL-17": {
+      "status": "fail",
+      "actual": "Retry-After: None",
+      "note": "no Retry-After header: the client cannot know when to retry"
+    },
+    "RL-18": {
+      "status": "fail",
+      "actual": "X-RateLimit-* in a normal response: none; in 429: none",
+      "note": "rate limit headers are disabled (slowapi headers_enabled=False)"
+    },
+    "RL-19": {
+      "status": "fail",
+      "actual": "endpoints documenting 429: none",
+      "note": ""
+    },
+    "RL-20": {
+      "status": "pass",
+      "actual": "429 {\"error\": \"Rate limit exceeded: 5 per 1 minute\"}",
+      "note": ""
+    },
+    "RL-21": {
+      "status": "pass",
+      "actual": "6th → 429; after 61 s → 401",
+      "note": ""
+    },
+    "RL-22": {
+      "status": "pass",
+      "actual": "probe at ~30 s → 429",
+      "note": ""
+    },
+    "RL-23": {
+      "status": "pass",
+      "actual": "probes every 10 s: {10: 429, 20: 429, 30: 429, 40: 429, 50: 429}; at 61 s from the first request → 401",
+      "note": ""
+    },
+    "RL-24": {
+      "status": "pass",
+      "actual": "1 request at 0 s, 4 at ~57 s, 5 at ~61 s → codes [401, 401, 401, 401, 401, 401, 401, 401, 401, 401]; 9 requests passed within ~5 s",
+      "note": "fixed window from the first request: up to 2×N requests can pass around the window boundary"
+    },
+    "RL-25": {
+      "status": "pass",
+      "actual": "10 logins at 12 s intervals → [401]",
+      "note": ""
+    },
+    "RL-26": {
+      "status": "pass",
+      "actual": "login exhausted → register 201",
+      "note": ""
+    },
+    "RL-27": {
+      "status": "pass",
+      "actual": "POST exhausted (31st → 429) → GET /items/ 200",
+      "note": ""
+    },
+    "RL-28": {
+      "status": "pass",
+      "actual": "GET /items/ exhausted → GET /items/all 200",
+      "note": "separate counters per route"
+    },
+    "RL-29": {
+      "status": "pass",
+      "actual": "POST exhausted → PUT 200",
+      "note": "separate counters per route"
+    },
+    "RL-30": {
+      "status": "pass",
+      "actual": "User A exhausted GET /items/ → User B (same IP) → 429",
+      "note": "the key is the client IP: users behind one NAT / office IP block each other"
+    },
+    "RL-31": {
+      "status": "pass",
+      "actual": "6 different emails → [404, 404, 404, 404, 404, 429]",
+      "note": ""
+    },
+    "RL-32": {
+      "status": "fail",
+      "actual": "host IP exhausted for qa1110161440_rl…; same account from another IP (container) → [401, 401, 401, 401, 401]",
+      "note": "no per-account limit: each additional IP gets 5 more password attempts per minute"
+    },
+    "RL-33": {
+      "status": "pass",
+      "actual": "codes: [401, 401, 401, 401, 401, 429]",
+      "note": ""
+    },
+    "RL-34": {
+      "status": "fail",
+      "actual": "10 × invalid body → [422]; then a valid login → 401",
+      "note": "requests rejected by body validation (422) are not counted — the limit can be bypassed"
+    },
+    "RL-35": {
+      "status": "pass",
+      "actual": "duplicate registrations → [400, 400, 400, 429]",
+      "note": ""
+    },
+    "RL-36": {
+      "status": "fail",
+      "actual": "61 × GET /items/ without a token → [403]; then with a token → 200",
+      "note": "requests rejected by authentication are not rate-limited"
+    },
+    "RL-37": {
+      "status": "fail",
+      "actual": "61 × GET /items/ with an invalid token → [401]",
+      "note": "requests with an invalid token are not rate-limited (token brute force is unlimited)"
+    },
+    "RL-38": {
+      "status": "pass",
+      "actual": "6 correct logins → [200, 200, 200, 200, 200, 429]; new refresh tokens: 5 (RL-02: 4th user not created, RL-09: exactly 30 items)",
+      "note": ""
+    },
+    "RL-39": {
+      "status": "fail",
+      "actual": "logs table records: 0; console mentions: False",
+      "note": "rate limit violations are not logged anywhere"
+    },
+    "RL-40": {
+      "status": "pass",
+      "actual": "LOGIN_RATE_LIMIT=2/minute → [401, 401, 429]",
+      "note": ""
+    },
+    "RL-41": {
+      "status": "pass",
+      "actual": "exhausted → docker restart → login 401",
+      "note": "counters are in-memory: a restart resets them; with several workers or instances limits would not be shared"
+    },
+    "RL-42": {
+      "status": "fail",
+      "actual": "LOGIN_RATE_LIMIT='abc': container running, /health → 200, 8 logins → [401, 401, 401, 401, 401, 401, 401, 401]; log: no error lines",
+      "note": "an invalid limit value is silently accepted and the login limit is disabled"
+    },
+    "RL-43": {
+      "status": "pass",
+      "actual": "with X-Forwarded-For spoofing → [429, 429, 429]",
+      "note": ""
+    },
+    "RL-44": {
+      "status": "pass",
+      "actual": "with X-Real-IP spoofing → [429, 429]",
+      "note": ""
+    },
+    "RL-45": {
+      "status": "pass",
+      "actual": "after exhausting /items/: {'/items': 307, '/items/?x=1': 429, '/ITEMS/': 404}",
+      "note": ""
+    },
+    "RL-46": {
+      "status": "pass",
+      "actual": "logs records with ip: 0/1454; all host clients share one counter (RL-30)",
+      "note": "requests from the host reach the container through the Docker gateway, so all clients of the stand share one limit; logs.ip is never filled, so the client IP cannot be checked from the logs"
+    },
+    "RL-47": {
+      "status": "fail",
+      "actual": "key_func=get_remote_address → request.client.host; uvicorn runs without --proxy-headers / --forwarded-allow-ips; X-Forwarded-For is ignored (RL-43)",
+      "note": "behind a reverse proxy every user gets the proxy IP and therefore one shared limit — one client can block login for everyone"
+    },
+    "E2E-01": {
+      "status": "pass",
+      "actual": "20 wrong → 1–5 [401], 6–20 [429]; correct password → 429; after the window → 200",
+      "note": ""
+    },
+    "E2E-02": {
+      "status": "pass",
+      "actual": "login, 10 × GET, 5 × POST, refresh, logout → [200, 201]",
+      "note": ""
+    },
+    "E2E-03": {
+      "status": "pass",
+      "actual": "40 × POST → 201: 30, 429: 10; created: 30",
+      "note": ""
+    }
+  },
+  "reruns": [
+    {
+      "run_id": "1110162243",
+      "sections": [
+        "s_limits",
+        "s_config"
+      ],
+      "checks": [
+        "RL-01",
+        "RL-02",
+        "RL-03",
+        "RL-04",
+        "RL-05",
+        "RL-06",
+        "RL-07",
+        "RL-08",
+        "RL-09",
+        "RL-10",
+        "RL-11",
+        "RL-12",
+        "RL-40",
+        "RL-41",
+        "RL-42",
+        "RL-43",
+        "RL-44",
+        "RL-45",
+        "RL-46",
+        "RL-47"
+      ]
+    }
+  ]
+}
