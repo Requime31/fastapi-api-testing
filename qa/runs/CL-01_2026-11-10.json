@@ -1,0 +1,599 @@
+{
+  "checklist": "CL-01 Auth",
+  "run_id": "1110150625",
+  "date": "2026-11-10T14:06:49.023601+00:00",
+  "environment": "Local (Docker), qa/docker-compose.functional.yml",
+  "repo_commit": "606484f",
+  "results": {
+    "REG-01": {
+      "status": "pass",
+      "actual": "201 {\"message\": \"User created\"}",
+      "note": ""
+    },
+    "REG-02": {
+      "status": "pass",
+      "actual": "201; phone в БД = +31612345678",
+      "note": ""
+    },
+    "REG-03": {
+      "status": "pass",
+      "actual": "201; phone IS NULL = t",
+      "note": ""
+    },
+    "REG-04": {
+      "status": "pass",
+      "actual": "hash prefix = $2b$12$…, len 60",
+      "note": ""
+    },
+    "REG-05": {
+      "status": "pass",
+      "actual": "id=38, is_active=t",
+      "note": ""
+    },
+    "REG-06": {
+      "status": "pass",
+      "actual": "201 {\"message\": \"User created\"}",
+      "note": ""
+    },
+    "REG-07": {
+      "status": "pass",
+      "actual": "201 {\"message\": \"User created\"}",
+      "note": ""
+    },
+    "REG-08": {
+      "status": "pass",
+      "actual": "qa+…: 201, qa.name@sub…: 201",
+      "note": ""
+    },
+    "REG-09": {
+      "status": "pass",
+      "actual": "(register, login) = [(201, 200), (201, 200)]",
+      "note": ""
+    },
+    "REG-10": {
+      "status": "fail",
+      "actual": "register 201; login с изменённым 73-м символом → 200",
+      "note": "bcrypt обрезает пароль до 72 байт: пароли, отличающиеся после 72-го символа, равнозначны"
+    },
+    "REG-11": {
+      "status": "pass",
+      "actual": "logs: ['INFO', 'New user registered: qa1110150625_reg01@test.com', '38', '/users/register']",
+      "note": ""
+    },
+    "REG-12": {
+      "status": "pass",
+      "actual": "400 {\"detail\": \"User already exists\"}; записей с email: 1",
+      "note": ""
+    },
+    "REG-13": {
+      "status": "fail",
+      "actual": "201 {\"message\": \"User created\"}",
+      "note": "создан второй пользователь QA1110150625_REG01@TEST.COM: email чувствителен к регистру"
+    },
+    "REG-14": {
+      "status": "pass",
+      "actual": "201 {\"message\": \"User created\"}; в БД: [qa1110150625_reg14@test.com]",
+      "note": ""
+    },
+    "REG-15": {
+      "status": "fail",
+      "actual": "201 {\"message\": \"User created\"}",
+      "note": "ограничение «minimum 6 characters» из Swagger не применяется"
+    },
+    "REG-16": {
+      "status": "fail",
+      "actual": "201 {\"message\": \"User created\"}",
+      "note": "пустой пароль принят"
+    },
+    "REG-17": {
+      "status": "fail",
+      "actual": "201 {\"message\": \"User created\"}",
+      "note": "пароль из пробелов принят"
+    },
+    "REG-18": {
+      "status": "pass",
+      "actual": "{'abc': 422, 'abc@': 422, '@test.com': 422, 'a b@test.com': 422, 'a@@test.com': 422}",
+      "note": ""
+    },
+    "REG-19": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"value_error\", \"loc\": [\"body\", \"email\"], \"msg\": \"value is not a valid email address: An email address must have an @-sign.\", \"input\": \"\", \"ctx\": {\"reason\": \"An email address must have an @-sign.\"}}]}",
+      "note": ""
+    },
+    "REG-20": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"missing\", \"loc\": [\"body\", \"email\"], \"msg\": \"Field required\", \"input\": {\"password\": \"Passw0rd!\"}}]}",
+      "note": ""
+    },
+    "REG-21": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"missing\", \"loc\": [\"body\", \"password\"], \"msg\": \"Field required\", \"input\": {\"email\": \"qa1110150625_reg21@test.com\"}}]}",
+      "note": ""
+    },
+    "REG-22": {
+      "status": "pass",
+      "actual": "422; loc = [['body', 'email'], ['body', 'password']]",
+      "note": ""
+    },
+    "REG-23": {
+      "status": "pass",
+      "actual": "plain text → 422, битый JSON → 422",
+      "note": ""
+    },
+    "REG-24": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"string_type\", \"loc\": [\"body\", \"email\"], \"msg\": \"Input should be a valid string\", \"input\": null}, {\"type\": \"string_type\", \"loc\": [\"body\", \"password\"], \"msg\": \"Input should be a valid string\", \"input\"",
+      "note": ""
+    },
+    "REG-25": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"string_type\", \"loc\": [\"body\", \"email\"], \"msg\": \"Input should be a valid string\", \"input\": 123}, {\"type\": \"string_type\", \"loc\": [\"body\", \"password\"], \"msg\": \"Input should be a valid string\", \"input\":",
+      "note": ""
+    },
+    "REG-26": {
+      "status": "fail",
+      "actual": "{'abc': 201, '123': 201, '11111111111111111111111111111111111111111111111111': 201}",
+      "note": "формат телефона не валидируется"
+    },
+    "REG-27": {
+      "status": "fail",
+      "actual": "422 {\"detail\": [{\"type\": \"string_type\", \"loc\": [\"body\", \"phone\"], \"msg\": \"Input should be a valid string\", \"input\": null}]}",
+      "note": ""
+    },
+    "REG-28": {
+      "status": "pass",
+      "actual": "201; id=55, is_active=t",
+      "note": ""
+    },
+    "REG-29": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"value_error\", \"loc\": [\"body\", \"email\"], \"msg\": \"value is not a valid email address: The email address is too long before the @-sign (236 characters too many).\", \"input\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "note": ""
+    },
+    "REG-30": {
+      "status": "pass",
+      "actual": "a'--@… → 201, ' OR 1=1-- → 422; users 54→55",
+      "note": ""
+    },
+    "REG-31": {
+      "status": "pass",
+      "actual": "405 {\"detail\": \"Method Not Allowed\"}",
+      "note": ""
+    },
+    "REG-32": {
+      "status": "pass",
+      "actual": "logs (повтор REG-12): ['WARNING', 'Registration attempt with existing email: qa1110150625_reg01@test.com', '/users/register']",
+      "note": ""
+    },
+    "LOG-01": {
+      "status": "pass",
+      "actual": "200; keys=['access_token', 'token_type']",
+      "note": ""
+    },
+    "LOG-02": {
+      "status": "pass",
+      "actual": "Set-Cookie: ['refresh_token=<redacted>']",
+      "note": ""
+    },
+    "LOG-03": {
+      "status": "pass",
+      "actual": "атрибуты: HttpOnly; Max-Age=604800; Path=/; SameSite=lax; Secure",
+      "note": ""
+    },
+    "LOG-04": {
+      "status": "pass",
+      "actual": "header={'alg': 'HS256', 'typ': 'JWT'}, claims=['exp', 'user_id']",
+      "note": ""
+    },
+    "LOG-05": {
+      "status": "pass",
+      "actual": "exp − now = 30.0 мин",
+      "note": ""
+    },
+    "LOG-06": {
+      "status": "pass",
+      "actual": "claims={'user_id': 57, 'exp': 1794321392}",
+      "note": ""
+    },
+    "LOG-07": {
+      "status": "pass",
+      "actual": "200 []",
+      "note": ""
+    },
+    "LOG-08": {
+      "status": "pass",
+      "actual": "новых записей: 1, revoked=f, expires через 7.00 дн., hash=sha256(cookie): True",
+      "note": ""
+    },
+    "LOG-09": {
+      "status": "pass",
+      "actual": "второй логин 200; активных токенов 2; refresh 1 → 200, refresh 2 → 200",
+      "note": ""
+    },
+    "LOG-10": {
+      "status": "pass",
+      "actual": "access различаются: True, refresh различаются: True",
+      "note": ""
+    },
+    "LOG-11": {
+      "status": "fail",
+      "actual": "404 {\"detail\": \"User not found\"}",
+      "note": "логин с email в другом регистре не работает"
+    },
+    "LOG-12": {
+      "status": "pass",
+      "actual": "logs: ['INFO', 'User logged in: qa1110150625_log@test.com', '57', '/users/login']",
+      "note": ""
+    },
+    "LOG-13": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Wrong password\"}; cookie: False; токенов 4→4",
+      "note": ""
+    },
+    "LOG-14": {
+      "status": "pass",
+      "actual": "404 {\"detail\": \"User not found\"}",
+      "note": ""
+    },
+    "LOG-15": {
+      "status": "fail",
+      "actual": "неверный пароль → 401 {\"detail\": \"Wrong password\"}; нет пользователя → 404 {\"detail\": \"User not found\"}",
+      "note": "разные ответы позволяют перебором узнать, зарегистрирован ли email (user enumeration)"
+    },
+    "LOG-16": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Wrong password\"}",
+      "note": ""
+    },
+    "LOG-17": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Wrong password\"}",
+      "note": ""
+    },
+    "LOG-18": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Wrong password\"}",
+      "note": ""
+    },
+    "LOG-19": {
+      "status": "pass",
+      "actual": "422 {\"detail\": [{\"type\": \"value_error\", \"loc\": [\"body\", \"email\"], \"msg\": \"value is not a valid email address: An email address must have an @-sign.\", \"input\": \"not-an-email\", \"ctx\": {\"reason\": \"An email address must have an ",
+      "note": ""
+    },
+    "LOG-20": {
+      "status": "pass",
+      "actual": "без email → 422, без password → 422",
+      "note": ""
+    },
+    "LOG-21": {
+      "status": "pass",
+      "actual": "{} → 422, plain text → 422",
+      "note": ""
+    },
+    "LOG-22": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Wrong password\"}",
+      "note": ""
+    },
+    "LOG-23": {
+      "status": "fail",
+      "actual": "200 {\"access_token\": \"<jwt>\", \"token_type\": \"bearer\"}",
+      "note": "деактивированный пользователь (is_active=false) успешно логинится"
+    },
+    "LOG-24": {
+      "status": "fail",
+      "actual": "нет пользователя: 4 мс, неверный пароль: 250 мс",
+      "note": "по времени ответа можно определить существование email (bcrypt выполняется только для существующего пользователя)"
+    },
+    "LOG-25": {
+      "status": "pass",
+      "actual": "logs: ['WARNING', 'Failed login attempt for: qa1110150625_log@test.com']; записей с паролем: 0",
+      "note": ""
+    },
+    "REF-01": {
+      "status": "pass",
+      "actual": "200 {\"access_token\": \"<jwt>",
+      "note": ""
+    },
+    "REF-02": {
+      "status": "pass",
+      "actual": "GET /items/ → 200; user_id тот же: True",
+      "note": ""
+    },
+    "REF-03": {
+      "status": "pass",
+      "actual": "новый cookie ≠ старому: True; атрибуты сохранены: True",
+      "note": ""
+    },
+    "REF-04": {
+      "status": "pass",
+      "actual": "старый revoked=t; новый revoked=f, истекает через 7.00 дн.",
+      "note": ""
+    },
+    "REF-05": {
+      "status": "pass",
+      "actual": "коды: [200, 200, 200]",
+      "note": ""
+    },
+    "REF-06": {
+      "status": "pass",
+      "actual": "старый access token после refresh → 200",
+      "note": "старый access token валиден до exp (stateless JWT) — ожидаемое ограничение"
+    },
+    "REF-07": {
+      "status": "pass",
+      "actual": "истёкшая запись после refresh: удалена",
+      "note": ""
+    },
+    "REF-08": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"No refresh token provided\"}",
+      "note": ""
+    },
+    "REF-09": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"No refresh token provided\"}",
+      "note": ""
+    },
+    "REF-10": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired refresh token\"}",
+      "note": ""
+    },
+    "REF-11": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired refresh token\"}",
+      "note": ""
+    },
+    "REF-12": {
+      "status": "fail",
+      "actual": "новый токен цепочки после reuse → 200",
+      "note": "нет reuse detection: после повторного использования отозванного токена цепочка продолжает работать (украденный токен не выявляется)"
+    },
+    "REF-13": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired refresh token\"}",
+      "note": ""
+    },
+    "REF-14": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired refresh token\"}",
+      "note": ""
+    },
+    "REF-15": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired refresh token\"}",
+      "note": ""
+    },
+    "REF-16": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired refresh token\"}",
+      "note": ""
+    },
+    "REF-17": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"No refresh token provided\"}",
+      "note": ""
+    },
+    "REF-18": {
+      "status": "pass",
+      "actual": "5 параллельных refresh одним токеном → [200, 401, 401, 401, 401]",
+      "note": ""
+    },
+    "REF-19": {
+      "status": "skip",
+      "actual": "удалить пользователя с активными токенами нельзя: ERROR:  update or delete on table \"users\" violates foreign key constraint \"refresh_tokens_user_id_fkey\" on table \"refres",
+      "note": "FK refresh_tokens.user_id без ON DELETE CASCADE — сценарий недостижим, проверка неприменима"
+    },
+    "REF-20": {
+      "status": "pass",
+      "actual": "logs: ['WARNING', 'Invalid or expired refresh token used']; токен в логах: False",
+      "note": ""
+    },
+    "OUT-01": {
+      "status": "pass",
+      "actual": "200 {\"message\": \"Logged out\"}",
+      "note": ""
+    },
+    "OUT-02": {
+      "status": "pass",
+      "actual": "Set-Cookie: refresh_token=\"\"; expires=Tue, 10 Nov 2026 14:06:41 GMT; Max-Age=0; Path=/; SameSite=lax",
+      "note": ""
+    },
+    "OUT-03": {
+      "status": "pass",
+      "actual": "revoked = t",
+      "note": ""
+    },
+    "OUT-04": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired refresh token\"}",
+      "note": ""
+    },
+    "OUT-05": {
+      "status": "pass",
+      "actual": "refresh второй сессии → 200",
+      "note": ""
+    },
+    "OUT-06": {
+      "status": "pass",
+      "actual": "access token после logout → 200",
+      "note": "access token валиден до exp — known limitation stateless JWT"
+    },
+    "OUT-07": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"No refresh token provided\"}",
+      "note": ""
+    },
+    "OUT-08": {
+      "status": "fail",
+      "actual": "200 {\"message\": \"Logged out\"}",
+      "note": "logout с несуществующим токеном возвращает успешный ответ"
+    },
+    "OUT-09": {
+      "status": "pass",
+      "actual": "200 {\"message\": \"Logged out\"}",
+      "note": "идемпотентный 200"
+    },
+    "OUT-10": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"No refresh token provided\"}",
+      "note": ""
+    },
+    "OUT-11": {
+      "status": "fail",
+      "actual": "logs: level=INFO, user_id=NULL",
+      "note": "в записи logout не заполнен user_id — по логам нельзя понять, кто вышел"
+    },
+    "ALL-01": {
+      "status": "pass",
+      "actual": "200 {\"message\": \"Logged out from all devices\"}",
+      "note": ""
+    },
+    "ALL-02": {
+      "status": "pass",
+      "actual": "refresh каждым из 3 токенов → [401, 401, 401]",
+      "note": ""
+    },
+    "ALL-03": {
+      "status": "pass",
+      "actual": "неотозванных токенов пользователя: 0",
+      "note": ""
+    },
+    "ALL-04": {
+      "status": "pass",
+      "actual": "refresh User B → 200",
+      "note": ""
+    },
+    "ALL-05": {
+      "status": "pass",
+      "actual": "Set-Cookie: refresh_token=\"\"; expires=tue, 10 nov 2026 14:06:43 gmt; max-age=0; path=/; samesite=lax",
+      "note": ""
+    },
+    "ALL-06": {
+      "status": "pass",
+      "actual": "логин → 200, GET /items/ → 200",
+      "note": ""
+    },
+    "ALL-07": {
+      "status": "fail",
+      "actual": "старый access token после logout-all → 200",
+      "note": "после «выхода со всех устройств» access-токены остаются валидными до 30 мин"
+    },
+    "ALL-08": {
+      "status": "fail",
+      "actual": "403 {\"detail\": \"Not authenticated\"}",
+      "note": "возвращается 403 вместо задокументированного в Swagger 401"
+    },
+    "ALL-09": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": ""
+    },
+    "ALL-10": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": "токен с exp в прошлом подписан ключом стенда"
+    },
+    "ALL-11": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": ""
+    },
+    "ALL-12": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": ""
+    },
+    "ALL-13": {
+      "status": "pass",
+      "actual": "{'Token': 403, 'Basic': 403, 'без схемы': 403}",
+      "note": ""
+    },
+    "ALL-14": {
+      "status": "pass",
+      "actual": "403 {\"detail\": \"Not authenticated\"}",
+      "note": ""
+    },
+    "ALL-15": {
+      "status": "pass",
+      "actual": "200 {\"message\": \"Logged out from all devices\"}",
+      "note": ""
+    },
+    "ALL-16": {
+      "status": "pass",
+      "actual": "logs: ['INFO', '63']",
+      "note": ""
+    },
+    "SEC-01": {
+      "status": "pass",
+      "actual": "403 {\"detail\": \"Not authenticated\"}",
+      "note": "403 вместо 401 — в Swagger для защищённых эндпоинтов коды не описаны"
+    },
+    "SEC-02": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": ""
+    },
+    "SEC-03": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"User not found\"}",
+      "note": ""
+    },
+    "SEC-04": {
+      "status": "fail",
+      "actual": "200 []",
+      "note": "токен деактивированного пользователя продолжает работать"
+    },
+    "SEC-05": {
+      "status": "pass",
+      "actual": "401 {\"detail\": \"Invalid or expired token\"}",
+      "note": ""
+    },
+    "SEC-06": {
+      "status": "pass",
+      "actual": "проверено ответов: 4 + все ответы прогона; с утечками: []",
+      "note": ""
+    },
+    "E2E-01": {
+      "status": "pass",
+      "actual": "шаги: [201, 200, 200, 200, 200, 200, 401]",
+      "note": ""
+    },
+    "E2E-02": {
+      "status": "pass",
+      "actual": "logout d1, refresh d2, logout-all, refresh d2 → [200, 200, 200, 401]",
+      "note": ""
+    },
+    "E2E-03": {
+      "status": "pass",
+      "actual": "коды [201, 400, 401, 200]; уровни логов ['INFO', 'WARNING', 'WARNING', 'INFO']",
+      "note": ""
+    },
+    "SEC-07": {
+      "status": "pass",
+      "actual": "logs: паролей 0, JWT 0; консоль: утечек нет",
+      "note": ""
+    },
+    "SEC-08": {
+      "status": "fail",
+      "actual": "записей logs с email этого прогона: 82",
+      "note": "email пользователей (PII) пишутся в logs.message в открытом виде"
+    },
+    "SEC-09": {
+      "status": "pass",
+      "actual": "{'/users/register': 'application/json', '/users/login': 'application/json', '/users/refresh': 'application/json', '/users/logout': 'application/json', '/users/logout-all': 'application/json'}",
+      "note": ""
+    },
+    "SEC-10": {
+      "status": "fail",
+      "actual": "не воспроизведены: ['/users/refresh:422', '/users/logout:422']; недокументированные: ['/users/logout-all:403']",
+      "note": "422 для refresh/logout сгенерирован FastAPI автоматически и недостижим (cookie-параметр опционален); 403 для logout-all не описан — см. ALL-08"
+    },
+    "SEC-11": {
+      "status": "pass",
+      "actual": "httpx по HTTP: cookie сохранён=True, refresh без ручной передачи → 401",
+      "note": "клиент со строгой обработкой Secure не отправляет cookie по HTTP; Chrome считает localhost безопасным контекстом и отправляет. HTTPS не проверялся (нет стенда)"
+    }
+  }
+}

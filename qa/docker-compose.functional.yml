@@ -1,0 +1,13 @@
+# QA override for functional testing (CL-01, CL-02, CL-04):
+# raises rate limits so they don't interfere with functional checks.
+# Usage (from repo root):
+#   docker compose -f docker-compose.yml -f qa/docker-compose.functional.yml up -d --build
+# For CL-03 (rate limit) start WITHOUT this override.
+services:
+  api:
+    environment:
+      DEFAULT_RATE_LIMIT: 1000/minute
+      LOGIN_RATE_LIMIT: 1000/minute
+      REGISTER_RATE_LIMIT: 1000/minute
+      ITEMS_READ_RATE_LIMIT: 1000/minute
+      ITEMS_WRITE_RATE_LIMIT: 1000/minute
