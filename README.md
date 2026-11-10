@@ -1,86 +1,89 @@
-# FastAPI API Testing — QA-проект
+# FastAPI API Testing — QA Project
 
-Ручное и исследовательское тестирование REST API на **FastAPI + PostgreSQL** с JWT-аутентификацией, refresh-токенами, rate limiting и soft delete.
+Manual and exploratory testing of a **FastAPI + PostgreSQL** REST API with JWT authentication, refresh tokens, rate limiting and soft delete.
 
-Проект имитирует работу QA Engineer на реальном бэкенде: от smoke-тестирования и тест-плана до чек-листов, баг-репортов и итогового отчёта.
+The project simulates the work of a QA Engineer on a real backend: from smoke testing and a test plan to checklists, bug reports and a test summary report.
 
-> Тестируемое приложение написано [nisanMan](https://github.com/nisanMan) — оригинальный репозиторий [nisanMan/fastapi-project](https://github.com/nisanMan/fastapi-project). История коммитов автора сохранена. QA-артефакты в папках `docs/`, `postman/` и в [Issues](../../issues) — моя работа.
+> The application under test was written by [nisanMan](https://github.com/nisanMan) — original repository: [nisanMan/fastapi-project](https://github.com/nisanMan/fastapi-project). The author's commit history is preserved. The QA artifacts in `docs/`, `qa/`, `postman/` and [Issues](../../issues) are my work.
 
 ---
 
-## Статус
+## Status
 
-| Этап | Артефакт | Статус |
+| Stage | Artifact | Status |
 |---|---|---|
-| Smoke-тестирование | — | ✅ Выполнено |
-| Планирование | [Test Plan](docs/TEST_PLAN.md) | ✅ Готов |
-| Тест-дизайн | [Чек-листы](docs/checklists/) — 381 проверка | ✅ Готовы |
-| Выполнение | [CL-01 Auth](docs/checklists/CL-01_Auth.md): 118 проверок — 98 ✅ / 19 ❌ / 1 ⏭ ([результаты](qa/runs/CL-01_2026-11-10.json)); CL-02…CL-04 | 🔄 1 из 4 чек-листов |
-| Трекинг | Jira `FAT` ([эпик цикла FAT-1](../../issues/1)) → зеркало в [Issues](../../issues): [12 багов](../../issues?q=label%3Abug) (4 Major, 7 Minor, 1 Trivial), [4 вопроса](../../issues?q=label%3Aquestion) | 🔄 В процессе |
-| Отчётность | Test Summary Report | ⏳ |
+| Smoke testing | — | ✅ Done |
+| Planning | [Test Plan](docs/TEST_PLAN.md) | ✅ Ready |
+| Test design | [Checklists](docs/checklists/) — 381 checks | ✅ Ready |
+| Execution | [CL-01 Auth](docs/checklists/CL-01_Auth.md): 118 checks — 98 ✅ / 19 ❌ / 1 ⏭ ([raw results](qa/runs/CL-01_2026-11-10.json)); CL-02…CL-04 | 🔄 1 of 4 checklists |
+| Tracking | Jira `FAT` ([cycle epic FAT-1](../../issues/1)) → mirrored to [Issues](../../issues): [12 bugs](../../issues?q=label%3Abug) (4 Major, 7 Minor, 1 Trivial), [4 questions](../../issues?q=label%3Aquestion) | 🔄 In progress |
+| Reporting | Test Summary Report | ⏳ |
 
 ---
 
-## QA-артефакты
+## QA artifacts
 
 ### [Test Plan](docs/TEST_PLAN.md)
-Скоуп (15 функций), стратегия, уровни и виды тестирования, техники тест-дизайна, 15 зон риска, окружение, entry / exit criteria, severity и жизненный цикл дефекта, график, риски проекта.
+Scope (15 features), strategy, test levels and types, test design techniques, 15 risk areas, environment, entry / exit criteria, severity and defect lifecycle, schedule, project risks.
 
-### Чек-листы
+### Checklists
 
-| Чек-лист | Модуль | Проверок |
+| Checklist | Module | Checks |
 |---|---|---|
-| [CL-01 Auth](docs/checklists/CL-01_Auth.md) | Регистрация, логин, refresh, logout, logout-all, безопасность токенов | 118 |
-| [CL-02 Items](docs/checklists/CL-02_Items.md) | CRUD, пагинация, soft delete, разграничение доступа (IDOR) | 117 |
-| [CL-03 Rate Limit](docs/checklists/CL-03_RateLimit.md) | Лимиты, формат `429`, окно сброса, независимость счётчиков, попытки обхода | 50 |
-| [CL-04 Health / Logs / CORS / Docs](docs/checklists/CL-04_Health_Logs_CORS.md) | Health check и отказ БД, логирование, CORS, OpenAPI | 96 |
-| **Всего** | | **381** |
+| [CL-01 Auth](docs/checklists/CL-01_Auth.md) | Registration, login, refresh, logout, logout-all, token security | 118 |
+| [CL-02 Items](docs/checklists/CL-02_Items.md) | CRUD, pagination, soft delete, access control (IDOR) | 117 |
+| [CL-03 Rate Limit](docs/checklists/CL-03_RateLimit.md) | Limits, `429` format, reset window, counter independence, bypass attempts | 50 |
+| [CL-04 Health / Logs / CORS / Docs](docs/checklists/CL-04_Health_Logs_CORS.md) | Health check and DB failure, logging, CORS, OpenAPI | 96 |
+| **Total** | | **381** |
 
-### Применённые техники тест-дизайна
-- классы эквивалентности и граничные значения — валидация полей, пагинация, лимиты;
-- таблица принятия решений — права на операции с чужими / удалёнными / несуществующими items;
-- диаграмма состояний — жизненный цикл refresh-токена (выдан → ротирован / отозван / истёк);
-- error guessing на основе анализа исходного кода.
+### Test design techniques used
+- equivalence partitioning and boundary values — field validation, pagination, limits;
+- decision table — permissions on other users' / deleted / non-existent items;
+- state transition — refresh token lifecycle (issued → rotated / revoked / expired);
+- error guessing based on source code analysis.
+
+### Checklist execution
+Each checklist is executed by a script in [`qa/scripts/`](qa/scripts/): every check is an HTTP request to the local stand, database state is verified with `psql` inside the container. Raw results are stored in [`qa/runs/`](qa/runs/) and transferred to the checklist (status, actual result, linked bug).
 
 ### Postman
-Коллекция `FastAPI Project - QA Testing` и environment `Fast API Local` — в папке [`postman/`](postman/), в формате Postman Local View (подключается через Postman → Workspace → Local View, файл [`.postman/resources.yaml`](.postman/resources.yaml)).
+Collection `FastAPI Project - QA Testing` and environment `Fast API Local` live in [`postman/`](postman/) in Postman Local View format (open via Postman → Workspace → Local View, file [`.postman/resources.yaml`](.postman/resources.yaml)).
 
-### Трекинг: Jira + GitHub Issues
-Работа ведётся в **Jira** (проект `FAT`), как на реальном проекте: баги с полями Severity / Priority / Components / Affects version, задачи на прогон чек-листов, вопросы к разработчику, workflow `К выполнению → В работе → Исправлено → Повторная проверка → Готово`.
+### Tracking: Jira + GitHub Issues
+Work is tracked in **Jira** (project `FAT`) as on a real project: bugs with Severity / Priority, components and affected version, checklist run tasks, questions to the developer, and a defect workflow `To Do → In Progress → Fixed → Re-test → Done`.
 
-Jira закрыта для посторонних, поэтому каждая задача зеркалируется в [Issues](../../issues) этого репозитория с тем же ключом в заголовке (`[FAT-12] ...`), метками `bug` / `task` / `question`, `severity:*`, `component:*` и milestone тестового цикла. Схема синхронизации — в [Test Plan, раздел 7.4](docs/TEST_PLAN.md#74-трекинг-jira--github-issues).
+Jira is private, so every Jira issue is mirrored to this repository's [Issues](../../issues) with the same number (`FAT-12` ↔ `#12`), labels `bug` / `task` / `question`, `severity:*`, `component:*` and the test cycle milestone. Jira is kept in Russian; the GitHub mirror is an English translation. Sync rules: [Test Plan, section 7.4](docs/TEST_PLAN.md#74-tracking-jira--github-issues).
 
-| Что посмотреть | Ссылка |
+| What to look at | Link |
 |---|---|
-| Все баги | [label:bug](../../issues?q=label%3Abug) |
-| Открытые Critical / Blocker | [severity:critical, severity:blocker](../../issues?q=is%3Aopen+label%3Aseverity%3Acritical%2Cseverity%3Ablocker) |
-| Задачи на прогон | [label:task](../../issues?q=label%3Atask) |
-| Вопросы к разработчику | [label:question](../../issues?q=label%3Aquestion) |
-| Ход тестового цикла | [Milestones](../../milestones) |
+| All bugs | [label:bug](../../issues?q=label%3Abug) |
+| Open Critical / Blocker | [severity:critical, severity:blocker](../../issues?q=is%3Aopen+label%3Aseverity%3Acritical%2Cseverity%3Ablocker) |
+| Run tasks | [label:task](../../issues?q=label%3Atask) |
+| Questions to the developer | [label:question](../../issues?q=label%3Aquestion) |
+| Test cycle progress | [Milestones](../../milestones) |
 
 ---
 
-## Тестируемое приложение
+## Application under test
 
 | | |
 |---|---|
-| Стек | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL 15, Alembic, slowapi, Docker Compose |
-| Аутентификация | JWT access token (30 мин) + refresh token в httpOnly cookie (7 дней) с ротацией |
-| Эндпоинты | `/users/register`, `/users/login`, `/users/refresh`, `/users/logout`, `/users/logout-all`, `/items/` (CRUD), `/items/all` (пагинация), `/health` |
-| Тестируемая версия | API v1.7.0, коммит `660708b` |
-| Описание от автора | [docs/APP_README.md](docs/APP_README.md) |
+| Stack | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL 15, Alembic, slowapi, Docker Compose |
+| Authentication | JWT access token (30 min) + refresh token in an httpOnly cookie (7 days) with rotation |
+| Endpoints | `/users/register`, `/users/login`, `/users/refresh`, `/users/logout`, `/users/logout-all`, `/items/` (CRUD), `/items/all` (pagination), `/health` |
+| Version under test | API v1.7.0, commit `660708b` |
+| Author's description | [docs/APP_README.md](docs/APP_README.md) |
 
 ---
 
-## Как поднять стенд
+## Running the stand
 
-Требуется Docker и Docker Compose.
+Requires Docker and Docker Compose.
 
 ```bash
 git clone https://github.com/Requime31/fastapi-api-testing.git
 cd fastapi-api-testing
 cp .env.example .env
-docker-compose up --build
+docker compose -f docker-compose.yml -f qa/docker-compose.functional.yml up -d --build
 ```
 
 | | URL |
@@ -89,39 +92,50 @@ docker-compose up --build
 | Swagger UI | http://localhost:8000/docs |
 | Health check | http://localhost:8000/health |
 
-Для функционального тестирования поднимите лимиты в `.env` до `1000/minute`. Rate limit проверяется отдельно, с лимитами по умолчанию — см. [CL-03](docs/checklists/CL-03_RateLimit.md).
+The `qa/docker-compose.functional.yml` override raises rate limits to `1000/minute` for functional checklists. Rate limiting itself is tested separately with default limits — start without the override, see [CL-03](docs/checklists/CL-03_RateLimit.md).
 
-Доступ к БД для проверки данных:
+Run a checklist:
+
+```bash
+pip install httpx python-jose
+python qa/scripts/run_cl01_auth.py
+```
+
+Database access for data checks:
 
 ```bash
 docker exec -it fastapi_postgres psql -U postgres -d fastapi_db
 ```
 
-Автотесты разработчика (pytest, SQLite):
+Developer unit tests (pytest, SQLite):
 
 ```bash
-docker-compose run api pytest tests/ -v
+docker compose run api pytest tests/ -v
 ```
 
 ---
 
-## Инструменты
+## Tools
 
-Jira · Postman · Swagger UI · psql · Docker Compose · curl · jwt.io · pytest · GitHub Issues
+Jira · Postman · Swagger UI · psql · Docker Compose · curl · httpx · jwt.io · pytest · GitHub Issues
 
 ---
 
-## Структура репозитория
+## Repository structure
 
 ```
 ├── docs/
-│   ├── TEST_PLAN.md          # тест-план
-│   ├── checklists/           # чек-листы CL-01…CL-04
-│   └── APP_README.md         # описание приложения от автора
-├── postman/                  # Postman-коллекция и environment
+│   ├── TEST_PLAN.md          # test plan
+│   ├── checklists/           # checklists CL-01…CL-04 with run results
+│   └── APP_README.md         # author's description of the application
+├── qa/
+│   ├── scripts/              # checklist execution scripts
+│   ├── runs/                 # raw run results (JSON)
+│   └── docker-compose.functional.yml  # stand override for functional testing
+├── postman/                  # Postman collection and environment
 ├── .github/
-│   ├── ISSUE_TEMPLATE/       # шаблон баг-репорта
-│   └── workflows/ci.yml      # автотесты разработчика в CI
-├── app/                      # тестируемое приложение
-└── tests/                    # автотесты разработчика (pytest)
+│   ├── ISSUE_TEMPLATE/       # bug report and task templates
+│   └── workflows/ci.yml      # developer unit tests in CI
+├── app/                      # application under test
+└── tests/                    # developer unit tests (pytest)
 ```

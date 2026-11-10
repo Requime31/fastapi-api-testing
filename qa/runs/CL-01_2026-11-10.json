@@ -1,9 +1,10 @@
 {
   "checklist": "CL-01 Auth",
-  "run_id": "1110150625",
-  "date": "2026-11-10T14:06:49.023601+00:00",
+  "run_id": "1110155215",
+  "date": "2026-11-10T14:52:38.725149+00:00",
   "environment": "Local (Docker), qa/docker-compose.functional.yml",
-  "repo_commit": "606484f",
+  "app_build": "660708b",
+  "repo_commit": "000ed7c",
   "results": {
     "REG-01": {
       "status": "pass",
@@ -12,7 +13,7 @@
     },
     "REG-02": {
       "status": "pass",
-      "actual": "201; phone в БД = +31612345678",
+      "actual": "201; phone in DB = +31612345678",
       "note": ""
     },
     "REG-03": {
@@ -27,7 +28,7 @@
     },
     "REG-05": {
       "status": "pass",
-      "actual": "id=38, is_active=t",
+      "actual": "id=73, is_active=t",
       "note": ""
     },
     "REG-06": {
@@ -52,43 +53,43 @@
     },
     "REG-10": {
       "status": "fail",
-      "actual": "register 201; login с изменённым 73-м символом → 200",
-      "note": "bcrypt обрезает пароль до 72 байт: пароли, отличающиеся после 72-го символа, равнозначны"
+      "actual": "register 201; login with a changed 73rd character → 200",
+      "note": "bcrypt truncates the password to 72 bytes: passwords differing after the 72nd character are equivalent"
     },
     "REG-11": {
       "status": "pass",
-      "actual": "logs: ['INFO', 'New user registered: qa1110150625_reg01@test.com', '38', '/users/register']",
+      "actual": "logs: ['INFO', 'New user registered: qa1110155215_reg01@test.com', '73', '/users/register']",
       "note": ""
     },
     "REG-12": {
       "status": "pass",
-      "actual": "400 {\"detail\": \"User already exists\"}; записей с email: 1",
+      "actual": "400 {\"detail\": \"User already exists\"}; records with this email: 1",
       "note": ""
     },
     "REG-13": {
       "status": "fail",
       "actual": "201 {\"message\": \"User created\"}",
-      "note": "создан второй пользователь QA1110150625_REG01@TEST.COM: email чувствителен к регистру"
+      "note": "a second user QA1110155215_REG01@TEST.COM was created: email is case-sensitive"
     },
     "REG-14": {
       "status": "pass",
-      "actual": "201 {\"message\": \"User created\"}; в БД: [qa1110150625_reg14@test.com]",
+      "actual": "201 {\"message\": \"User created\"}; in DB: [qa1110155215_reg14@test.com]",
       "note": ""
     },
     "REG-15": {
       "status": "fail",
       "actual": "201 {\"message\": \"User created\"}",
-      "note": "ограничение «minimum 6 characters» из Swagger не применяется"
+      "note": "the \"minimum 6 characters\" rule from Swagger is not enforced"
     },
     "REG-16": {
       "status": "fail",
       "actual": "201 {\"message\": \"User created\"}",
-      "note": "пустой пароль принят"
+      "note": "an empty password is accepted"
     },
     "REG-17": {
       "status": "fail",
       "actual": "201 {\"message\": \"User created\"}",
-      "note": "пароль из пробелов принят"
+      "note": "a password of spaces is accepted"
     },
     "REG-18": {
       "status": "pass",
@@ -107,7 +108,7 @@
     },
     "REG-21": {
       "status": "pass",
-      "actual": "422 {\"detail\": [{\"type\": \"missing\", \"loc\": [\"body\", \"password\"], \"msg\": \"Field required\", \"input\": {\"email\": \"qa1110150625_reg21@test.com\"}}]}",
+      "actual": "422 {\"detail\": [{\"type\": \"missing\", \"loc\": [\"body\", \"password\"], \"msg\": \"Field required\", \"input\": {\"email\": \"qa1110155215_reg21@test.com\"}}]}",
       "note": ""
     },
     "REG-22": {
@@ -117,7 +118,7 @@
     },
     "REG-23": {
       "status": "pass",
-      "actual": "plain text → 422, битый JSON → 422",
+      "actual": "plain text → 422, broken JSON → 422",
       "note": ""
     },
     "REG-24": {
@@ -133,7 +134,7 @@
     "REG-26": {
       "status": "fail",
       "actual": "{'abc': 201, '123': 201, '11111111111111111111111111111111111111111111111111': 201}",
-      "note": "формат телефона не валидируется"
+      "note": "the phone format is not validated"
     },
     "REG-27": {
       "status": "fail",
@@ -142,7 +143,7 @@
     },
     "REG-28": {
       "status": "pass",
-      "actual": "201; id=55, is_active=t",
+      "actual": "201; id=90, is_active=t",
       "note": ""
     },
     "REG-29": {
@@ -152,7 +153,7 @@
     },
     "REG-30": {
       "status": "pass",
-      "actual": "a'--@… → 201, ' OR 1=1-- → 422; users 54→55",
+      "actual": "a'--@… → 201, ' OR 1=1-- → 422; users 88→89",
       "note": ""
     },
     "REG-31": {
@@ -162,7 +163,7 @@
     },
     "REG-32": {
       "status": "pass",
-      "actual": "logs (повтор REG-12): ['WARNING', 'Registration attempt with existing email: qa1110150625_reg01@test.com', '/users/register']",
+      "actual": "logs (REG-12 repeat): ['WARNING', 'Registration attempt with existing email: qa1110155215_reg01@test.com', '/users/register']",
       "note": ""
     },
     "LOG-01": {
@@ -177,7 +178,7 @@
     },
     "LOG-03": {
       "status": "pass",
-      "actual": "атрибуты: HttpOnly; Max-Age=604800; Path=/; SameSite=lax; Secure",
+      "actual": "attributes: HttpOnly; Max-Age=604800; Path=/; SameSite=lax; Secure",
       "note": ""
     },
     "LOG-04": {
@@ -187,12 +188,12 @@
     },
     "LOG-05": {
       "status": "pass",
-      "actual": "exp − now = 30.0 мин",
+      "actual": "exp − now = 30.0 min",
       "note": ""
     },
     "LOG-06": {
       "status": "pass",
-      "actual": "claims={'user_id': 57, 'exp': 1794321392}",
+      "actual": "claims=['exp', 'user_id']",
       "note": ""
     },
     "LOG-07": {
@@ -202,32 +203,32 @@
     },
     "LOG-08": {
       "status": "pass",
-      "actual": "новых записей: 1, revoked=f, expires через 7.00 дн., hash=sha256(cookie): True",
+      "actual": "new records: 1, revoked=f, expires in 7.00 days, hash=sha256(cookie): True",
       "note": ""
     },
     "LOG-09": {
       "status": "pass",
-      "actual": "второй логин 200; активных токенов 2; refresh 1 → 200, refresh 2 → 200",
+      "actual": "second login 200; active tokens 2; refresh 1 → 200, refresh 2 → 200",
       "note": ""
     },
     "LOG-10": {
       "status": "pass",
-      "actual": "access различаются: True, refresh различаются: True",
+      "actual": "access tokens differ: True, refresh tokens differ: True",
       "note": ""
     },
     "LOG-11": {
       "status": "fail",
       "actual": "404 {\"detail\": \"User not found\"}",
-      "note": "логин с email в другом регистре не работает"
+      "note": "login with the email in a different case fails"
     },
     "LOG-12": {
       "status": "pass",
-      "actual": "logs: ['INFO', 'User logged in: qa1110150625_log@test.com', '57', '/users/login']",
+      "actual": "logs: ['INFO', 'User logged in: qa1110155215_log@test.com', '92', '/users/login']",
       "note": ""
     },
     "LOG-13": {
       "status": "pass",
-      "actual": "401 {\"detail\": \"Wrong password\"}; cookie: False; токенов 4→4",
+      "actual": "401 {\"detail\": \"Wrong password\"}; cookie: False; tokens 4→4",
       "note": ""
     },
     "LOG-14": {
@@ -237,8 +238,8 @@
     },
     "LOG-15": {
       "status": "fail",
-      "actual": "неверный пароль → 401 {\"detail\": \"Wrong password\"}; нет пользователя → 404 {\"detail\": \"User not found\"}",
-      "note": "разные ответы позволяют перебором узнать, зарегистрирован ли email (user enumeration)"
+      "actual": "wrong password → 401 {\"detail\": \"Wrong password\"}; no user → 404 {\"detail\": \"User not found\"}",
+      "note": "different responses reveal whether an email is registered (user enumeration)"
     },
     "LOG-16": {
       "status": "pass",
@@ -262,7 +263,7 @@
     },
     "LOG-20": {
       "status": "pass",
-      "actual": "без email → 422, без password → 422",
+      "actual": "no email → 422, no password → 422",
       "note": ""
     },
     "LOG-21": {
@@ -278,16 +279,16 @@
     "LOG-23": {
       "status": "fail",
       "actual": "200 {\"access_token\": \"<jwt>\", \"token_type\": \"bearer\"}",
-      "note": "деактивированный пользователь (is_active=false) успешно логинится"
+      "note": "a deactivated user (is_active=false) logs in successfully"
     },
     "LOG-24": {
       "status": "fail",
-      "actual": "нет пользователя: 4 мс, неверный пароль: 250 мс",
-      "note": "по времени ответа можно определить существование email (bcrypt выполняется только для существующего пользователя)"
+      "actual": "no user: 5 ms, wrong password: 255 ms",
+      "note": "the response time reveals whether an email exists (bcrypt runs only for existing users)"
     },
     "LOG-25": {
       "status": "pass",
-      "actual": "logs: ['WARNING', 'Failed login attempt for: qa1110150625_log@test.com']; записей с паролем: 0",
+      "actual": "logs: ['WARNING', 'Failed login attempt for: qa1110155215_log@test.com']; records with the password: 0",
       "note": ""
     },
     "REF-01": {
@@ -297,32 +298,32 @@
     },
     "REF-02": {
       "status": "pass",
-      "actual": "GET /items/ → 200; user_id тот же: True",
+      "actual": "GET /items/ → 200; same user_id: True",
       "note": ""
     },
     "REF-03": {
       "status": "pass",
-      "actual": "новый cookie ≠ старому: True; атрибуты сохранены: True",
+      "actual": "new cookie ≠ old: True; attributes kept: True",
       "note": ""
     },
     "REF-04": {
       "status": "pass",
-      "actual": "старый revoked=t; новый revoked=f, истекает через 7.00 дн.",
+      "actual": "old revoked=t; new revoked=f, expires in 7.00 days",
       "note": ""
     },
     "REF-05": {
       "status": "pass",
-      "actual": "коды: [200, 200, 200]",
+      "actual": "codes: [200, 200, 200]",
       "note": ""
     },
     "REF-06": {
       "status": "pass",
-      "actual": "старый access token после refresh → 200",
-      "note": "старый access token валиден до exp (stateless JWT) — ожидаемое ограничение"
+      "actual": "old access token after refresh → 200",
+      "note": "the old access token is valid until exp (stateless JWT) — expected limitation"
     },
     "REF-07": {
       "status": "pass",
-      "actual": "истёкшая запись после refresh: удалена",
+      "actual": "expired record after refresh: deleted",
       "note": ""
     },
     "REF-08": {
@@ -347,8 +348,8 @@
     },
     "REF-12": {
       "status": "fail",
-      "actual": "новый токен цепочки после reuse → 200",
-      "note": "нет reuse detection: после повторного использования отозванного токена цепочка продолжает работать (украденный токен не выявляется)"
+      "actual": "new token of the chain after reuse → 200",
+      "note": "no reuse detection: after a revoked token is reused, the chain keeps working (a stolen token goes unnoticed)"
     },
     "REF-13": {
       "status": "pass",
@@ -377,17 +378,17 @@
     },
     "REF-18": {
       "status": "pass",
-      "actual": "5 параллельных refresh одним токеном → [200, 401, 401, 401, 401]",
+      "actual": "5 parallel refreshes with one token → [200, 401, 401, 401, 401]",
       "note": ""
     },
     "REF-19": {
       "status": "skip",
-      "actual": "удалить пользователя с активными токенами нельзя: ERROR:  update or delete on table \"users\" violates foreign key constraint \"refresh_tokens_user_id_fkey\" on table \"refres",
-      "note": "FK refresh_tokens.user_id без ON DELETE CASCADE — сценарий недостижим, проверка неприменима"
+      "actual": "a user with active tokens cannot be deleted: ERROR:  update or delete on table \"users\" violates foreign key constraint \"refresh_tokens_user_id_fkey\" on table \"refres",
+      "note": "FK refresh_tokens.user_id has no ON DELETE CASCADE — the scenario is unreachable, check not applicable"
     },
     "REF-20": {
       "status": "pass",
-      "actual": "logs: ['WARNING', 'Invalid or expired refresh token used']; токен в логах: False",
+      "actual": "logs: ['WARNING', 'Invalid or expired refresh token used']; token in logs: False",
       "note": ""
     },
     "OUT-01": {
@@ -397,7 +398,7 @@
     },
     "OUT-02": {
       "status": "pass",
-      "actual": "Set-Cookie: refresh_token=\"\"; expires=Tue, 10 Nov 2026 14:06:41 GMT; Max-Age=0; Path=/; SameSite=lax",
+      "actual": "Set-Cookie: refresh_token=\"\"; expires=Tue, 10 Nov 2026 14:52:31 GMT; Max-Age=0; Path=/; SameSite=lax",
       "note": ""
     },
     "OUT-03": {
@@ -412,13 +413,13 @@
     },
     "OUT-05": {
       "status": "pass",
-      "actual": "refresh второй сессии → 200",
+      "actual": "refresh of the second session → 200",
       "note": ""
     },
     "OUT-06": {
       "status": "pass",
-      "actual": "access token после logout → 200",
-      "note": "access token валиден до exp — known limitation stateless JWT"
+      "actual": "access token after logout → 200",
+      "note": "the access token is valid until exp — known limitation of stateless JWT"
     },
     "OUT-07": {
       "status": "pass",
@@ -428,12 +429,12 @@
     "OUT-08": {
       "status": "fail",
       "actual": "200 {\"message\": \"Logged out\"}",
-      "note": "logout с несуществующим токеном возвращает успешный ответ"
+      "note": "logout with a non-existent token returns a success response"
     },
     "OUT-09": {
       "status": "pass",
       "actual": "200 {\"message\": \"Logged out\"}",
-      "note": "идемпотентный 200"
+      "note": "idempotent 200"
     },
     "OUT-10": {
       "status": "pass",
@@ -443,7 +444,7 @@
     "OUT-11": {
       "status": "fail",
       "actual": "logs: level=INFO, user_id=NULL",
-      "note": "в записи logout не заполнен user_id — по логам нельзя понять, кто вышел"
+      "note": "the logout record has no user_id — the logs do not show who logged out"
     },
     "ALL-01": {
       "status": "pass",
@@ -452,38 +453,38 @@
     },
     "ALL-02": {
       "status": "pass",
-      "actual": "refresh каждым из 3 токенов → [401, 401, 401]",
+      "actual": "refresh with each of the 3 tokens → [401, 401, 401]",
       "note": ""
     },
     "ALL-03": {
       "status": "pass",
-      "actual": "неотозванных токенов пользователя: 0",
+      "actual": "non-revoked tokens of the user: 0",
       "note": ""
     },
     "ALL-04": {
       "status": "pass",
-      "actual": "refresh User B → 200",
+      "actual": "User B refresh → 200",
       "note": ""
     },
     "ALL-05": {
       "status": "pass",
-      "actual": "Set-Cookie: refresh_token=\"\"; expires=tue, 10 nov 2026 14:06:43 gmt; max-age=0; path=/; samesite=lax",
+      "actual": "Set-Cookie: refresh_token=\"\"; expires=tue, 10 nov 2026 14:52:33 gmt; max-age=0; path=/; samesite=lax",
       "note": ""
     },
     "ALL-06": {
       "status": "pass",
-      "actual": "логин → 200, GET /items/ → 200",
+      "actual": "login → 200, GET /items/ → 200",
       "note": ""
     },
     "ALL-07": {
       "status": "fail",
-      "actual": "старый access token после logout-all → 200",
-      "note": "после «выхода со всех устройств» access-токены остаются валидными до 30 мин"
+      "actual": "old access token after logout-all → 200",
+      "note": "after \"log out of all devices\" access tokens stay valid for up to 30 min"
     },
     "ALL-08": {
       "status": "fail",
       "actual": "403 {\"detail\": \"Not authenticated\"}",
-      "note": "возвращается 403 вместо задокументированного в Swagger 401"
+      "note": "returns 403 instead of the 401 documented in Swagger"
     },
     "ALL-09": {
       "status": "pass",
@@ -493,7 +494,7 @@
     "ALL-10": {
       "status": "pass",
       "actual": "401 {\"detail\": \"Invalid or expired token\"}",
-      "note": "токен с exp в прошлом подписан ключом стенда"
+      "note": "a token with exp in the past, signed with the stand's key"
     },
     "ALL-11": {
       "status": "pass",
@@ -507,7 +508,7 @@
     },
     "ALL-13": {
       "status": "pass",
-      "actual": "{'Token': 403, 'Basic': 403, 'без схемы': 403}",
+      "actual": "{'Token': 403, 'Basic': 403, 'no scheme': 403}",
       "note": ""
     },
     "ALL-14": {
@@ -522,13 +523,13 @@
     },
     "ALL-16": {
       "status": "pass",
-      "actual": "logs: ['INFO', '63']",
+      "actual": "logs: ['INFO', '98']",
       "note": ""
     },
     "SEC-01": {
       "status": "pass",
       "actual": "403 {\"detail\": \"Not authenticated\"}",
-      "note": "403 вместо 401 — в Swagger для защищённых эндпоинтов коды не описаны"
+      "note": "403 instead of 401 — codes for protected endpoints are not documented in Swagger"
     },
     "SEC-02": {
       "status": "pass",
@@ -543,7 +544,7 @@
     "SEC-04": {
       "status": "fail",
       "actual": "200 []",
-      "note": "токен деактивированного пользователя продолжает работать"
+      "note": "the token of a deactivated user keeps working"
     },
     "SEC-05": {
       "status": "pass",
@@ -552,12 +553,12 @@
     },
     "SEC-06": {
       "status": "pass",
-      "actual": "проверено ответов: 4 + все ответы прогона; с утечками: []",
+      "actual": "responses checked: 4 + all responses of the run; with leaks: []",
       "note": ""
     },
     "E2E-01": {
       "status": "pass",
-      "actual": "шаги: [201, 200, 200, 200, 200, 200, 401]",
+      "actual": "steps: [201, 200, 200, 200, 200, 200, 401]",
       "note": ""
     },
     "E2E-02": {
@@ -567,18 +568,18 @@
     },
     "E2E-03": {
       "status": "pass",
-      "actual": "коды [201, 400, 401, 200]; уровни логов ['INFO', 'WARNING', 'WARNING', 'INFO']",
+      "actual": "codes [201, 400, 401, 200]; log levels ['INFO', 'WARNING', 'WARNING', 'INFO']",
       "note": ""
     },
     "SEC-07": {
       "status": "pass",
-      "actual": "logs: паролей 0, JWT 0; консоль: утечек нет",
+      "actual": "logs: passwords 0, JWT 0; console: leaks none",
       "note": ""
     },
     "SEC-08": {
       "status": "fail",
-      "actual": "записей logs с email этого прогона: 82",
-      "note": "email пользователей (PII) пишутся в logs.message в открытом виде"
+      "actual": "logs records with emails of this run: 82",
+      "note": "user emails (PII) are written to logs.message in plain text"
     },
     "SEC-09": {
       "status": "pass",
@@ -587,13 +588,13 @@
     },
     "SEC-10": {
       "status": "fail",
-      "actual": "не воспроизведены: ['/users/refresh:422', '/users/logout:422']; недокументированные: ['/users/logout-all:403']",
-      "note": "422 для refresh/logout сгенерирован FastAPI автоматически и недостижим (cookie-параметр опционален); 403 для logout-all не описан — см. ALL-08"
+      "actual": "not reproduced: ['/users/refresh:422', '/users/logout:422']; undocumented: ['/users/logout-all:403']",
+      "note": "422 for refresh/logout is auto-generated by FastAPI and unreachable (the cookie parameter is optional); 403 for logout-all is not documented — see ALL-08"
     },
     "SEC-11": {
       "status": "pass",
-      "actual": "httpx по HTTP: cookie сохранён=True, refresh без ручной передачи → 401",
-      "note": "клиент со строгой обработкой Secure не отправляет cookie по HTTP; Chrome считает localhost безопасным контекстом и отправляет. HTTPS не проверялся (нет стенда)"
+      "actual": "httpx over HTTP: cookie stored=True, refresh without passing it manually → 401",
+      "note": "a client with strict Secure handling does not send the cookie over HTTP; Chrome treats localhost as a secure context and sends it. HTTPS not checked (no stand)"
     }
   }
 }

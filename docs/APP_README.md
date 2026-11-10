@@ -1,6 +1,6 @@
-# FastAPI Project — описание приложения (оригинальный README автора)
+# FastAPI Project — application description (author's original README)
 
-> Оригинальный README из репозитория [nisanMan/fastapi-project](https://github.com/nisanMan/fastapi-project). QA-документация проекта — в [README](../README.md).
+> Original README from [nisanMan/fastapi-project](https://github.com/nisanMan/fastapi-project). The QA documentation of this project is in the [README](../README.md).
 
 
 A production-ready REST API built with **FastAPI**, **PostgreSQL**, **Docker**, and **JWT Authentication**.

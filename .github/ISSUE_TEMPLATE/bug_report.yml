@@ -1,19 +1,19 @@
 name: Bug report
-description: Дефект, найденный при тестировании API
-title: "[FAT-N] <Эндпоинт>: <что не так> при <условии>"
+description: Defect found while testing the API (mirror of a Jira bug)
+title: "[FAT-N] <Endpoint>: <what is wrong> when <condition>"
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Зеркало бага из Jira. Сначала заведите баг в Jira (проект FAT), затем перенесите сюда ключ и описание.
-        Добавьте метки `severity:*` и `component:*`, укажите milestone тестового цикла.
+        Mirror of a Jira bug. File the bug in Jira (project FAT) first, then copy the key here and translate the description into English.
+        Add `severity:*` and `component:*` labels and set the test cycle milestone. The issue number should match the Jira key (FAT-N ↔ #N).
 
   - type: input
     id: jira
     attributes:
       label: Jira
-      description: Ключ и ссылка на задачу в Jira
+      description: Jira key and link
       placeholder: "FAT-12 — https://romanshevchenko316.atlassian.net/browse/FAT-12"
     validations:
       required: true
@@ -21,8 +21,8 @@ body:
   - type: input
     id: check
     attributes:
-      label: Проверка из чек-листа
-      description: ID проверки, на которой найден дефект
+      label: Checklist check
+      description: ID of the check that found the defect
       placeholder: "CL-02 / PAG-16"
     validations:
       required: true
@@ -31,7 +31,7 @@ body:
     id: severity
     attributes:
       label: Severity
-      description: Шкала из Test Plan, раздел 7.1
+      description: Scale from the Test Plan, section 7.1
       options:
         - Blocker
         - Critical
@@ -46,37 +46,39 @@ body:
     attributes:
       label: Priority
       options:
+        - Highest
         - High
         - Medium
         - Low
+        - Lowest
     validations:
       required: true
 
   - type: input
     id: environment
     attributes:
-      label: Окружение
-      placeholder: "Local (Docker), коммит 660708b, Postman 11"
+      label: Environment
+      placeholder: "Local (Docker), build 660708b"
     validations:
       required: true
 
   - type: textarea
     id: preconditions
     attributes:
-      label: Предусловия
+      label: Preconditions
       placeholder: |
-        1. Пользователь User A зарегистрирован и залогинен
-        2. В БД 25 items
+        1. User A is registered and logged in
+        2. The database contains 25 items
     validations:
       required: false
 
   - type: textarea
     id: steps
     attributes:
-      label: Шаги воспроизведения
-      description: Метод, URL, заголовки, тело. Удобнее всего — cURL
+      label: Steps to reproduce
+      description: Method, URL, headers, body — cURL is the easiest
       placeholder: |
-        1. Отправить запрос:
+        1. Send the request:
            curl -X GET "http://localhost:8000/items/all?page=0" -H "Authorization: Bearer <token>"
     validations:
       required: true
@@ -84,23 +86,23 @@ body:
   - type: textarea
     id: actual
     attributes:
-      label: Фактический результат
-      description: Статус-код и тело ответа, при необходимости — состояние БД и логи
+      label: Actual result
+      description: Status code and response body; database state and logs if relevant
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: Ожидаемый результат
-      description: Со ссылкой на источник требования (README / Swagger / RFC / общепринятая практика)
+      label: Expected result
+      description: With the source of the requirement (README / Swagger / RFC / common practice)
     validations:
       required: true
 
   - type: textarea
     id: attachments
     attributes:
-      label: Вложения и дополнительная информация
-      description: Скриншоты Postman, логи контейнера, ссылка на строку кода
+      label: Attachments and notes
+      description: Postman screenshots, container logs, link to the code line
     validations:
       required: false

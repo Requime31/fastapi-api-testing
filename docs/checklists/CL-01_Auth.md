@@ -1,221 +1,221 @@
-# Чек-лист CL-01 — Auth (Users)
+# Checklist CL-01 — Auth (Users)
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Модуль | Auth: F-01…F-05 из [Test Plan](../TEST_PLAN.md) |
-| Эндпоинты | `/users/register`, `/users/login`, `/users/refresh`, `/users/logout`, `/users/logout-all` |
-| Версия продукта | API v1.7.0 |
-| Окружение | Local (Docker), `http://localhost:8000` |
-| Исполнитель | QA (Requime31); прогон скриптом [`qa/scripts/run_cl01_auth.py`](../../qa/scripts/run_cl01_auth.py) |
-| Дата прогона | 10.11.2026 · сборка `660708b` · результаты [`qa/runs/CL-01_2026-11-10.json`](../../qa/runs/CL-01_2026-11-10.json) · Jira [FAT-3](https://romanshevchenko316.atlassian.net/browse/FAT-3) |
+| Module | Auth: F-01…F-05 from the [Test Plan](../TEST_PLAN.md) |
+| Endpoints | `/users/register`, `/users/login`, `/users/refresh`, `/users/logout`, `/users/logout-all` |
+| Product version | API v1.7.0 |
+| Environment | Local (Docker), `http://localhost:8000` |
+| Executed by | QA (Requime31); executed with [`qa/scripts/run_cl01_auth.py`](../../qa/scripts/run_cl01_auth.py) |
+| Run date | 10.11.2026 · build `660708b` · raw results [`qa/runs/CL-01_2026-11-10.json`](../../qa/runs/CL-01_2026-11-10.json) · Jira FAT-3 ([#3](https://github.com/Requime31/fastapi-api-testing/issues/3)) |
 
-**Легенда:**
-- **Приоритет:** H — High, M — Medium, L — Low
-- **Статус:** ✅ Passed · ❌ Failed · ⚠️ Blocked · ⏭ Skipped
-- **❓** — требование не задокументировано явно; ожидаемый результат основан на общепринятой практике, при расхождении завести вопрос / баг
-- **R-xx** — ссылка на зону риска из Test Plan
+**Legend:**
+- **Priority:** H — High, M — Medium, L — Low
+- **Status:** ✅ Passed · ❌ Failed · ⚠️ Blocked · ⏭ Skipped
+- **❓** — the requirement is not explicitly documented; the expected result is based on common practice; on mismatch, file a question / bug
+- **R-xx** — reference to a risk area in the Test Plan
 
-**Предусловия для всего модуля:**
-1. Стенд запущен, `GET /health` → `200`, `"database": "ok"`.
-2. Для функциональных проверок лимиты увеличены в `.env` (`LOGIN_RATE_LIMIT`, `REGISTER_RATE_LIMIT` = `1000/minute`). Rate limit проверяется отдельно, в [CL-03](CL-03_RateLimit.md).
-3. Подготовлены два пользователя: **User A** и **User B**.
-4. Для каждой проверки, где это важно, проверяется и **БД** (`docker exec -it fastapi_postgres psql -U postgres -d fastapi_db`).
+**Preconditions for the whole module:**
+1. The stand is running, `GET /health` → `200`, `"database": "ok"`.
+2. The stand is started with `qa/docker-compose.functional.yml` (`LOGIN_RATE_LIMIT`, `REGISTER_RATE_LIMIT` = `1000/minute`). Rate limiting is tested separately in [CL-03](CL-03_RateLimit.md).
+3. Two users are prepared: **User A** and **User B**.
+4. Where relevant, the **database** is checked as well (`docker exec -it fastapi_postgres psql -U postgres -d fastapi_db`).
 
 ---
 
-## 1. Регистрация — `POST /users/register` (F-01)
+## 1. Registration — `POST /users/register` (F-01)
 
-### 1.1 Позитивные проверки
+### 1.1 Positive checks
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| REG-01 | Регистрация с валидными email и password (6+ символов) | `201`, тело `{"message": "User created"}` | ✅ | |
-| REG-02 | Регистрация с валидными email, password и phone | `201`; в БД `users.phone` сохранён | ✅ | |
-| REG-03 | Регистрация без поля `phone` | `201`; в БД `phone = NULL` | ✅ | |
-| REG-04 | БД: пароль хранится в виде хеша | `users.password` ≠ исходному паролю, начинается с `$2b$` (bcrypt) | ✅ | |
-| REG-05 | БД: значения по умолчанию у нового пользователя | `is_active = true`, `id` назначен | ✅ | |
-| REG-06 | Ответ не содержит чувствительных данных | В теле нет `password`, хеша, токенов | ✅ | |
-| REG-07 | Пароль ровно 6 символов (граница) | `201` | ✅ | R-01 |
-| REG-08 | Email с допустимыми спецсимволами: `qa+1@test.com`, `qa.name@sub.test.com` | `201` | ✅ | |
-| REG-09 | Пароль с пробелами, unicode, спецсимволами (`p@ss w0rd!`, `пароль123`) | `201`; затем логин с этим паролем успешен | ✅ | |
-| REG-10 | Длинный пароль (72+ символа, лимит bcrypt) | `201` или понятная ошибка `422`. ❓ Проверить: проходит ли логин с паролем, у которого изменён только 73-й символ | ❌ | Факт: register 201; login с изменённым 73-м символом → 200 → **[FAT-12](https://github.com/Requime31/fastapi-api-testing/issues/12)** |
-| REG-11 | Создана запись в `logs` | `level = INFO`, `path = /users/register`, `user_id` = id нового пользователя | ✅ | R-12 |
+| REG-01 | Registration with a valid email and password (6+ characters) | `201`, body `{"message": "User created"}` | ✅ | |
+| REG-02 | Registration with a valid email, password and phone | `201`; `users.phone` stored in the DB | ✅ | |
+| REG-03 | Registration without `phone` | `201`; `phone = NULL` in the DB | ✅ | |
+| REG-04 | DB: the password is stored as a hash | `users.password` ≠ the original password, starts with `$2b$` (bcrypt) | ✅ | |
+| REG-05 | DB: defaults of a new user | `is_active = true`, `id` assigned | ✅ | |
+| REG-06 | The response contains no sensitive data | No `password`, hash or tokens in the body | ✅ | |
+| REG-07 | Password of exactly 6 characters (boundary) | `201` | ✅ | R-01 |
+| REG-08 | Email with allowed special characters: `qa+1@test.com`, `qa.name@sub.test.com` | `201` | ✅ | |
+| REG-09 | Password with spaces, unicode, special characters (`p@ss w0rd!`, `пароль123`) | `201`; login with that password succeeds | ✅ | |
+| REG-10 | Long password (72+ characters, bcrypt limit) | `201` or a clear `422`. ❓ Check whether login succeeds with a password that differs only in the 73rd character | ❌ | Actual: register 201; login with a changed 73rd character → 200 → **[FAT-12](https://github.com/Requime31/fastapi-api-testing/issues/12)** |
+| REG-11 | A record is created in `logs` | `level = INFO`, `path = /users/register`, `user_id` = the new user's id | ✅ | R-12 |
 
-### 1.2 Негативные проверки
+### 1.2 Negative checks
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| REG-12 | Повторная регистрация с существующим email | `400`, `{"detail": "User already exists"}`; новая запись в БД не создана | ✅ | |
-| REG-13 | Email существующего пользователя в другом регистре (`USER@test.com`) | ❓ `400`: email не должен различаться по регистру | ❌ | Факт: 201 {"message": "User created"} → **[FAT-9](https://github.com/Requime31/fastapi-api-testing/issues/9)** R-13 |
-| REG-14 | Email с пробелами по краям (`" qa@test.com "`) | ❓ `422` или пробелы обрезаются; дубликат не создаётся | ✅ | |
-| REG-15 | Пароль 5 символов (граница) | `422`: Swagger заявляет «minimum 6 characters» | ❌ | Факт: 201 {"message": "User created"} → **[FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8)** R-01 |
-| REG-16 | Пустой пароль `""` | `422` | ❌ | Факт: 201 {"message": "User created"} → **[FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8)** R-01 |
-| REG-17 | Пароль из одних пробелов `"      "` | ❓ `422` | ❌ | Факт: 201 {"message": "User created"} → **[FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8)** R-01 |
-| REG-18 | Невалидный email: `"abc"`, `"abc@"`, `"@test.com"`, `"a b@test.com"`, `"a@@test.com"` | `422` с указанием поля `email` | ✅ | |
-| REG-19 | Пустой email `""` | `422` | ✅ | |
-| REG-20 | Отсутствует поле `email` | `422`, `"msg": "Field required"`, `loc: ["body","email"]` | ✅ | |
-| REG-21 | Отсутствует поле `password` | `422`, `Field required` | ✅ | |
-| REG-22 | Пустое тело `{}` | `422` по обоим полям | ✅ | |
-| REG-23 | Тело не JSON (plain text) / битый JSON | `422`, без `500` | ✅ | |
+| REG-12 | Repeated registration with an existing email | `400`, `{"detail": "User already exists"}`; no new record in the DB | ✅ | |
+| REG-13 | Existing user's email in a different case (`USER@test.com`) | ❓ `400`: email should be case-insensitive | ❌ | Actual: 201 {"message": "User created"} → **[FAT-9](https://github.com/Requime31/fastapi-api-testing/issues/9)** R-13 |
+| REG-14 | Email with leading/trailing spaces (`" qa@test.com "`) | ❓ `422` or spaces are trimmed; no duplicate is created | ✅ | |
+| REG-15 | Password of 5 characters (boundary) | `422`: Swagger states "minimum 6 characters" | ❌ | Actual: 201 {"message": "User created"} → **[FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8)** R-01 |
+| REG-16 | Empty password `""` | `422` | ❌ | Actual: 201 {"message": "User created"} → **[FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8)** R-01 |
+| REG-17 | Password of spaces only `"      "` | ❓ `422` | ❌ | Actual: 201 {"message": "User created"} → **[FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8)** R-01 |
+| REG-18 | Invalid email: `"abc"`, `"abc@"`, `"@test.com"`, `"a b@test.com"`, `"a@@test.com"` | `422` naming the `email` field | ✅ | |
+| REG-19 | Empty email `""` | `422` | ✅ | |
+| REG-20 | `email` field missing | `422`, `"msg": "Field required"`, `loc: ["body","email"]` | ✅ | |
+| REG-21 | `password` field missing | `422`, `Field required` | ✅ | |
+| REG-22 | Empty body `{}` | `422` for both fields | ✅ | |
+| REG-23 | Non-JSON body (plain text) / broken JSON | `422`, no `500` | ✅ | |
 | REG-24 | `email = null`, `password = null` | `422` | ✅ | |
-| REG-25 | Неверные типы: `email: 123`, `password: 123456` (число) | `422` | ✅ | |
-| REG-26 | `phone` в невалидном формате (`"abc"`, `"123"`, 50 цифр) | ❓ `422`: формат телефона должен валидироваться | ❌ | Факт: {'abc': 201, '123': 201, '11111111111111111111111111111111111111111111111111': 201} → **[FAT-16](https://github.com/Requime31/fastapi-api-testing/issues/16)** R-14 |
-| REG-27 | `phone = null` явно | `201` | ❌ | Факт: 422 {"detail": [{"type": "string_type", "loc": ["body", "phone"], "msg": "Input should be a valid string", "input": null}]} → **[FAT-15](https://github.com/Requime31/fastapi-api-testing/issues/15)** |
-| REG-28 | Лишние поля в теле (`"is_active": false`, `"id": 999`) | Игнорируются: в БД `is_active = true`, `id` назначен автоматически (нет mass assignment) | ✅ | |
-| REG-29 | Очень длинный email (300+ символов) | `422`; без `500` | ✅ | |
-| REG-30 | SQL-инъекция в email: `"a'--@test.com"`, `"' OR 1=1--"` | `422` или `201` как обычная строка; без `500`, без изменения других данных | ✅ | |
-| REG-31 | Неверный метод: `GET /users/register` | `405 Method Not Allowed` | ✅ | |
-| REG-32 | Повторная регистрация → запись в `logs` | `level = WARNING`, `path = /users/register` | ✅ | R-12 |
+| REG-25 | Wrong types: `email: 123`, `password: 123456` (number) | `422` | ✅ | |
+| REG-26 | `phone` in an invalid format (`"abc"`, `"123"`, 50 digits) | ❓ `422`: the phone format should be validated | ❌ | Actual: {'abc': 201, '123': 201, '11111111111111111111111111111111111111111111111111': 201} → **[FAT-16](https://github.com/Requime31/fastapi-api-testing/issues/16)** R-14 |
+| REG-27 | Explicit `phone = null` | `201` | ❌ | Actual: 422 {"detail": [{"type": "string_type", "loc": ["body", "phone"], "msg": "Input should be a valid string", "input": null}]} → **[FAT-15](https://github.com/Requime31/fastapi-api-testing/issues/15)** |
+| REG-28 | Extra fields in the body (`"is_active": false`, `"id": 999`) | Ignored: in the DB `is_active = true`, `id` auto-assigned (no mass assignment) | ✅ | |
+| REG-29 | Very long email (300+ characters) | `422`; no `500` | ✅ | |
+| REG-30 | SQL injection in email: `"a'--@test.com"`, `"' OR 1=1--"` | `422` or `201` as a plain string; no `500`, no changes to other data | ✅ | |
+| REG-31 | Wrong method: `GET /users/register` | `405 Method Not Allowed` | ✅ | |
+| REG-32 | Repeated registration → record in `logs` | `level = WARNING`, `path = /users/register` | ✅ | R-12 |
 
 ---
 
-## 2. Логин — `POST /users/login` (F-02)
+## 2. Login — `POST /users/login` (F-02)
 
-### 2.1 Позитивные проверки
+### 2.1 Positive checks
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| LOG-01 | Логин с верными email и password | `200`, `{"access_token": "<jwt>", "token_type": "bearer"}` | ✅ | |
-| LOG-02 | Установлен cookie `refresh_token` | Заголовок `Set-Cookie: refresh_token=...` присутствует | ✅ | |
-| LOG-03 | Атрибуты cookie | `HttpOnly`, `Secure`, `SameSite=lax`, `Max-Age=604800` (7 дней) | ✅ | R-09 |
-| LOG-04 | Access token — валидный JWT | jwt.io: алгоритм `HS256`, payload содержит `user_id` и `exp` | ✅ | |
-| LOG-05 | Время жизни access token | `exp − текущее время` ≈ 30 минут (`ACCESS_TOKEN_EXPIRE_MINUTES`) | ✅ | |
-| LOG-06 | Payload JWT не содержит чувствительных данных | Нет пароля, хеша, email ❓ | ✅ | |
-| LOG-07 | Access token даёт доступ к защищённому эндпоинту | `GET /items/` с `Authorization: Bearer <token>` → `200` | ✅ | |
-| LOG-08 | БД: создан refresh token | В `refresh_tokens` новая запись: `user_id` верный, `revoked = false`, `expires_at` ≈ now + 7 дней, `token_hash` ≠ значению cookie (хранится SHA-256) | ✅ | |
-| LOG-09 | Повторный логин того же пользователя (2 устройства) | `200`; в БД две активные записи; оба refresh-токена работают независимо | ✅ | |
-| LOG-10 | Каждый логин выдаёт уникальные токены | Access token и refresh cookie отличаются от предыдущего логина | ✅ | |
-| LOG-11 | Логин с email в другом регистре | ❓ `200`: email не должен различаться по регистру | ❌ | Факт: 404 {"detail": "User not found"} → **[FAT-9](https://github.com/Requime31/fastapi-api-testing/issues/9)** R-13 |
-| LOG-12 | Создана запись в `logs` | `level = INFO`, `user_id` заполнен | ✅ | R-12 |
+| LOG-01 | Login with the correct email and password | `200`, `{"access_token": "<jwt>", "token_type": "bearer"}` | ✅ | |
+| LOG-02 | The `refresh_token` cookie is set | `Set-Cookie: refresh_token=...` header present | ✅ | |
+| LOG-03 | Cookie attributes | `HttpOnly`, `Secure`, `SameSite=lax`, `Max-Age=604800` (7 days) | ✅ | R-09 |
+| LOG-04 | The access token is a valid JWT | jwt.io: algorithm `HS256`, payload contains `user_id` and `exp` | ✅ | |
+| LOG-05 | Access token lifetime | `exp − now` ≈ 30 minutes (`ACCESS_TOKEN_EXPIRE_MINUTES`) | ✅ | |
+| LOG-06 | The JWT payload contains no sensitive data | No password, hash, email ❓ | ✅ | |
+| LOG-07 | The access token grants access to a protected endpoint | `GET /items/` with `Authorization: Bearer <token>` → `200` | ✅ | |
+| LOG-08 | DB: a refresh token is created | New record in `refresh_tokens`: correct `user_id`, `revoked = false`, `expires_at` ≈ now + 7 days, `token_hash` ≠ the cookie value (SHA-256 is stored) | ✅ | |
+| LOG-09 | Repeated login of the same user (2 devices) | `200`; two active records in the DB; both refresh tokens work independently | ✅ | |
+| LOG-10 | Each login issues unique tokens | Access token and refresh cookie differ from the previous login | ✅ | **[FAT-21](https://github.com/Requime31/fastapi-api-testing/issues/21)** |
+| LOG-11 | Login with the email in a different case | ❓ `200`: email should be case-insensitive | ❌ | Actual: 404 {"detail": "User not found"} → **[FAT-9](https://github.com/Requime31/fastapi-api-testing/issues/9)** R-13 |
+| LOG-12 | A record is created in `logs` | `level = INFO`, `user_id` set | ✅ | R-12 |
 
-### 2.2 Негативные проверки
+### 2.2 Negative checks
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| LOG-13 | Неверный пароль | `401`, `{"detail": "Wrong password"}`; cookie не установлен; запись в `refresh_tokens` не создана | ✅ | |
-| LOG-14 | Несуществующий email | `404`, `{"detail": "User not found"}` (согласно Swagger) | ✅ | |
-| LOG-15 | Сравнить ответы LOG-13 и LOG-14 | ❓ С точки зрения безопасности ответы должны быть одинаковыми (например, `401 "Invalid credentials"`), иначе возможен перебор email. Зафиксировать как замечание по безопасности | ❌ | Факт: неверный пароль → 401 {"detail": "Wrong password"}; нет пользователя → 404 {"detail": "User not found"} → **[FAT-11](https://github.com/Requime31/fastapi-api-testing/issues/11)** R-07 |
-| LOG-16 | Пароль в другом регистре (`Password` вместо `password`) | `401`: пароль чувствителен к регистру | ✅ | |
-| LOG-17 | Пароль с лишним пробелом в конце | `401` | ✅ | |
-| LOG-18 | Пустой пароль `""` | `401` или `422`, без `500` | ✅ | |
-| LOG-19 | Невалидный формат email | `422` | ✅ | |
-| LOG-20 | Отсутствует поле `email` / `password` | `422`, `Field required` | ✅ | |
-| LOG-21 | Пустое тело / не JSON | `422` | ✅ | |
-| LOG-22 | SQL-инъекция в password: `"' OR '1'='1"` | `401`, без `500` | ✅ | |
-| LOG-23 | Логин пользователя с `is_active = false` (выставить вручную в БД) | ❓ `401` / `403`: деактивированный пользователь не должен входить | ❌ | Факт: 200 {"access_token": "<jwt>… → **[FAT-10](https://github.com/Requime31/fastapi-api-testing/issues/10)** R-10 |
-| LOG-24 | Время ответа при несуществующем email и неверном пароле | ❓ Без заметной разницы во времени ответа (timing attack). Сравнить время в Postman | ❌ | Факт: нет пользователя: 4 мс, неверный пароль: 250 мс → **[FAT-11](https://github.com/Requime31/fastapi-api-testing/issues/11)** R-07 |
-| LOG-25 | Неудачный логин → запись в `logs` | `level = WARNING`; пароль в лог **не** попадает | ✅ | R-12 |
+| LOG-13 | Wrong password | `401`, `{"detail": "Wrong password"}`; no cookie; no record in `refresh_tokens` | ✅ | |
+| LOG-14 | Non-existent email | `404`, `{"detail": "User not found"}` (per Swagger) | ✅ | |
+| LOG-15 | Compare responses of LOG-13 and LOG-14 | ❓ From a security standpoint the responses should be identical (e.g. `401 "Invalid credentials"`), otherwise emails can be enumerated. Record as a security remark | ❌ | Actual: wrong password → 401 {"detail": "Wrong password"}; no user → 404 {"detail": "User not found"} → **[FAT-11](https://github.com/Requime31/fastapi-api-testing/issues/11)** R-07 |
+| LOG-16 | Password in a different case (`Password` instead of `password`) | `401`: the password is case-sensitive | ✅ | |
+| LOG-17 | Password with a trailing space | `401` | ✅ | |
+| LOG-18 | Empty password `""` | `401` or `422`, no `500` | ✅ | |
+| LOG-19 | Invalid email format | `422` | ✅ | |
+| LOG-20 | `email` / `password` field missing | `422`, `Field required` | ✅ | |
+| LOG-21 | Empty body / non-JSON | `422` | ✅ | |
+| LOG-22 | SQL injection in password: `"' OR '1'='1"` | `401`, no `500` | ✅ | |
+| LOG-23 | Login of a user with `is_active = false` (set manually in the DB) | ❓ `401` / `403`: a deactivated user must not log in | ❌ | Actual: 200 {"access_token": "<jwt>", "token_type": "bearer"} → **[FAT-10](https://github.com/Requime31/fastapi-api-testing/issues/10)** R-10 |
+| LOG-24 | Response time for a non-existent email vs a wrong password | ❓ No noticeable difference in response time (timing attack) | ❌ | Actual: no user: 5 ms, wrong password: 255 ms → **[FAT-11](https://github.com/Requime31/fastapi-api-testing/issues/11)** R-07 |
+| LOG-25 | Failed login → record in `logs` | `level = WARNING`; the password does **not** get into the log | ✅ | R-12 |
 
 ---
 
-## 3. Обновление токена — `POST /users/refresh` (F-03)
+## 3. Token refresh — `POST /users/refresh` (F-03)
 
-> Postman автоматически сохраняет cookie для домена. Для негативных проверок cookie нужно удалить или подменить через **Cookies** (под кнопкой Send) или передать вручную в заголовке `Cookie: refresh_token=<value>`.
+> Postman stores cookies for the domain automatically. For negative checks remove or replace the cookie via **Cookies** (under the Send button) or pass it manually in a `Cookie: refresh_token=<value>` header.
 
-### 3.1 Позитивные проверки
+### 3.1 Positive checks
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| REF-01 | Refresh с валидным cookie | `200`, `{"access_token": "...", "token_type": "bearer"}` | ✅ | |
-| REF-02 | Новый access token работает | `GET /items/` с новым токеном → `200`; `user_id` в payload тот же | ✅ | |
-| REF-03 | Ротация: выдан новый refresh cookie | `Set-Cookie: refresh_token=<новое значение>` ≠ старому; атрибуты как в LOG-03 | ✅ | |
-| REF-04 | БД после ротации | Старая запись `revoked = true`; новая запись `revoked = false`, `expires_at` ≈ now + 7 дней | ✅ | |
-| REF-05 | Цепочка ротаций (refresh 3 раза подряд, каждый раз с новым cookie) | Каждый раз `200` | ✅ | |
-| REF-06 | Старый access token после refresh | ❓ Остаётся валидным до истечения `exp` (stateless JWT). Зафиксировать фактическое поведение | ✅ | старый access token валиден до exp (stateless JWT) — ожидаемое ограничение R-08 |
-| REF-07 | Очистка истёкших токенов | Выставить в БД `expires_at` в прошлом у любой записи → вызвать refresh → запись удалена | ✅ | |
+| REF-01 | Refresh with a valid cookie | `200`, `{"access_token": "...", "token_type": "bearer"}` | ✅ | |
+| REF-02 | The new access token works | `GET /items/` with the new token → `200`; same `user_id` in the payload | ✅ | |
+| REF-03 | Rotation: a new refresh cookie is issued | `Set-Cookie: refresh_token=<new value>` ≠ the old one; attributes as in LOG-03 | ✅ | |
+| REF-04 | DB after rotation | Old record `revoked = true`; new record `revoked = false`, `expires_at` ≈ now + 7 days | ✅ | |
+| REF-05 | Rotation chain (3 refreshes in a row, each with the new cookie) | `200` every time | ✅ | |
+| REF-06 | Old access token after refresh | ❓ Remains valid until `exp` (stateless JWT). Record the actual behaviour | ✅ | the old access token is valid until exp (stateless JWT) — expected limitation → **[FAT-20](https://github.com/Requime31/fastapi-api-testing/issues/20)** R-08 |
+| REF-07 | Cleanup of expired tokens | Set `expires_at` in the past for any record → call refresh → the record is deleted | ✅ | |
 
-### 3.2 Негативные проверки
+### 3.2 Negative checks
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| REF-08 | Без cookie | `401`, `{"detail": "No refresh token provided"}` | ✅ | |
-| REF-09 | Пустой cookie `refresh_token=` | `401` | ✅ | |
-| REF-10 | Случайная строка в cookie | `401`, `"Invalid or expired refresh token"` | ✅ | |
-| REF-11 | **Повторное использование** старого refresh token после ротации | `401` | ✅ | R-08 |
-| REF-12 | После REF-11: работает ли **новый** токен из этой же цепочки? | ❓ Повторное использование отозванного токена — признак кражи. Best practice: отозвать всю цепочку (reuse detection). Зафиксировать фактическое поведение | ❌ | Факт: новый токен цепочки после reuse → 200 → **[FAT-18](https://github.com/Requime31/fastapi-api-testing/issues/18)** R-08 |
-| REF-13 | Refresh token, отозванный через logout | `401` | ✅ | |
-| REF-14 | Refresh token, отозванный через logout-all | `401` | ✅ | |
-| REF-15 | Истёкший refresh token (`expires_at` в прошлом в БД) | `401` | ✅ | |
-| REF-16 | Access token вместо refresh в cookie | `401` | ✅ | |
-| REF-17 | Refresh token в заголовке `Authorization: Bearer` вместо cookie | `401` (`No refresh token provided`) | ✅ | |
-| REF-18 | Параллельные запросы refresh с одним токеном (Postman Runner / 2 вкладки) | ❓ Успешен только один; второй → `401` (race condition) | ✅ | |
-| REF-19 | Refresh удалённого пользователя (удалить пользователя из БД вручную) | `401` или `404`, без `500` | ⏭ | Факт: удалить пользователя с активными токенами нельзя: ERROR:  update or delete on table "users" violates foreign key constraint "refr…. FK refresh_tokens.user_id без ON DELETE CASCADE — сценарий недостижим, проверка неприменима |
-| REF-20 | Неудачный refresh → запись в `logs` | `level = WARNING`, сам токен в лог не попадает | ✅ | R-12 |
+| REF-08 | No cookie | `401`, `{"detail": "No refresh token provided"}` | ✅ | |
+| REF-09 | Empty cookie `refresh_token=` | `401` | ✅ | |
+| REF-10 | Random string in the cookie | `401`, `"Invalid or expired refresh token"` | ✅ | |
+| REF-11 | **Reuse** of the old refresh token after rotation | `401` | ✅ | R-08 |
+| REF-12 | After REF-11: does the **new** token of the same chain still work? | ❓ Reuse of a revoked token is a sign of theft. Best practice: revoke the whole chain (reuse detection). Record the actual behaviour | ❌ | Actual: new token of the chain after reuse → 200 → **[FAT-18](https://github.com/Requime31/fastapi-api-testing/issues/18)** R-08 |
+| REF-13 | Refresh token revoked via logout | `401` | ✅ | |
+| REF-14 | Refresh token revoked via logout-all | `401` | ✅ | |
+| REF-15 | Expired refresh token (`expires_at` in the past in the DB) | `401` | ✅ | |
+| REF-16 | Access token instead of the refresh token in the cookie | `401` | ✅ | |
+| REF-17 | Refresh token in the `Authorization: Bearer` header instead of the cookie | `401` (`No refresh token provided`) | ✅ | |
+| REF-18 | Parallel refresh requests with the same token | ❓ Only one succeeds; the others → `401` (race condition) | ✅ | |
+| REF-19 | Refresh of a deleted user (delete the user from the DB manually) | `401` or `404`, no `500` | ⏭ | Actual: a user with active tokens cannot be deleted: ERROR:  update or delete on table "users" violates foreign key constraint "refresh_t…. FK refresh_tokens.user_id has no ON DELETE CASCADE — the scenario is unreachable, check not applicable → **[FAT-23](https://github.com/Requime31/fastapi-api-testing/issues/23)** |
+| REF-20 | Failed refresh → record in `logs` | `level = WARNING`, the token itself does not get into the log | ✅ | R-12 |
 
 ---
 
 ## 4. Logout — `POST /users/logout` (F-04)
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| OUT-01 | Logout с валидным cookie | `200`, `{"message": "Logged out"}` | ✅ | |
-| OUT-02 | Cookie удаляется | `Set-Cookie: refresh_token=""; Max-Age=0` (или `expires` в прошлом) | ✅ | |
-| OUT-03 | БД: токен отозван | Запись этого токена `revoked = true` | ✅ | |
-| OUT-04 | Refresh после logout | `POST /users/refresh` со старым cookie → `401` | ✅ | |
-| OUT-05 | Другие сессии не затронуты | Залогиниться дважды (2 токена), logout первым → refresh вторым → `200` | ✅ | |
-| OUT-06 | Access token после logout | ❓ Остаётся валидным до истечения (stateless JWT). Зафиксировать как known limitation | ✅ | access token валиден до exp — known limitation stateless JWT R-08 |
-| OUT-07 | Logout без cookie | `401`, `"No refresh token provided"` | ✅ | |
-| OUT-08 | Logout с невалидным / случайным cookie | ❓ `401`. Зафиксировать фактическое поведение: возвращается ли «успешный» ответ для несуществующего токена | ❌ | Факт: 200 {"message": "Logged out"} → **[FAT-14](https://github.com/Requime31/fastapi-api-testing/issues/14)** R-08 |
-| OUT-09 | Повторный logout с уже отозванным токеном | ❓ `401` или идемпотентный `200`. Зафиксировать поведение | ✅ | идемпотентный 200 |
-| OUT-10 | Logout с access token в `Authorization`, но без cookie | `401` | ✅ | |
-| OUT-11 | Запись в `logs` | `level = INFO`, `path = /users/logout`; ❓ заполнен ли `user_id` | ❌ | Факт: logs: level=INFO, user_id=NULL → **[FAT-19](https://github.com/Requime31/fastapi-api-testing/issues/19)** R-12 |
+| OUT-01 | Logout with a valid cookie | `200`, `{"message": "Logged out"}` | ✅ | |
+| OUT-02 | The cookie is removed | `Set-Cookie: refresh_token=""; Max-Age=0` (or `expires` in the past) | ✅ | |
+| OUT-03 | DB: the token is revoked | That token's record has `revoked = true` | ✅ | |
+| OUT-04 | Refresh after logout | `POST /users/refresh` with the old cookie → `401` | ✅ | |
+| OUT-05 | Other sessions are not affected | Log in twice (2 tokens), log out with the first → refresh with the second → `200` | ✅ | |
+| OUT-06 | Access token after logout | ❓ Remains valid until expiry (stateless JWT). Record as a known limitation | ✅ | the access token is valid until exp — known limitation of stateless JWT → **[FAT-20](https://github.com/Requime31/fastapi-api-testing/issues/20)** R-08 |
+| OUT-07 | Logout without a cookie | `401`, `"No refresh token provided"` | ✅ | |
+| OUT-08 | Logout with an invalid / random cookie | ❓ `401`. Record whether a "successful" response is returned for a non-existent token | ❌ | Actual: 200 {"message": "Logged out"} → **[FAT-14](https://github.com/Requime31/fastapi-api-testing/issues/14)** R-08 |
+| OUT-09 | Repeated logout with an already revoked token | ❓ `401` or an idempotent `200`. Record the behaviour | ✅ | idempotent 200 |
+| OUT-10 | Logout with an access token in `Authorization` but no cookie | `401` | ✅ | |
+| OUT-11 | Record in `logs` | `level = INFO`, `path = /users/logout`; ❓ is `user_id` set | ❌ | Actual: logs: level=INFO, user_id=NULL → **[FAT-19](https://github.com/Requime31/fastapi-api-testing/issues/19)** R-12 |
 
 ---
 
-## 5. Logout со всех устройств — `POST /users/logout-all` (F-05)
+## 5. Logout from all devices — `POST /users/logout-all` (F-05)
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| ALL-01 | Logout-all с валидным access token | `200`, `{"message": "Logged out from all devices"}` | ✅ | |
-| ALL-02 | Все сессии пользователя отозваны | Логин 3 раза (3 refresh-токена) → logout-all → refresh каждым токеном → `401` | ✅ | |
-| ALL-03 | БД | Все записи `refresh_tokens` пользователя `revoked = true` | ✅ | |
-| ALL-04 | Сессии **другого** пользователя не затронуты | User A делает logout-all → refresh User B → `200` | ✅ | |
-| ALL-05 | Cookie удаляется | `Set-Cookie` с `Max-Age=0` | ✅ | |
-| ALL-06 | Новый логин после logout-all | `200`, новая сессия работает | ✅ | |
-| ALL-07 | Access token после logout-all | ❓ Остаётся валидным до истечения. Для «выхода со всех устройств» это значимо — зафиксировать как риск | ❌ | Факт: старый access token после logout-all → 200. после «выхода со всех устройств» access-токены остаются валидными до 30 мин → **[FAT-20](https://github.com/Requime31/fastapi-api-testing/issues/20)** R-08 |
-| ALL-08 | Без заголовка `Authorization` | `401` или `403` (поведение `HTTPBearer`). Сверить с Swagger, где указан `401` | ❌ | Факт: 403 {"detail": "Not authenticated"} → **[FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13)** R-06 |
-| ALL-09 | Невалидный access token (случайная строка) | `401`, `"Invalid or expired token"` | ✅ | |
-| ALL-10 | Истёкший access token (временно `ACCESS_TOKEN_EXPIRE_MINUTES=1`) | `401` | ✅ | токен с exp в прошлом подписан ключом стенда |
-| ALL-11 | JWT, подписанный другим ключом (сгенерировать на jwt.io) | `401` | ✅ | |
-| ALL-12 | JWT с изменённым `user_id` в payload без переподписи | `401` | ✅ | |
-| ALL-13 | Неверная схема: `Authorization: Token <jwt>` / `Basic ...` / без `Bearer` | `401` / `403` | ✅ | |
-| ALL-14 | Только refresh cookie, без access token | `401` / `403` | ✅ | |
-| ALL-15 | Пользователь без активных сессий | `200`, без ошибок | ✅ | |
-| ALL-16 | Запись в `logs` | `level = INFO`, `user_id` заполнен | ✅ | R-12 |
+| ALL-01 | Logout-all with a valid access token | `200`, `{"message": "Logged out from all devices"}` | ✅ | |
+| ALL-02 | All of the user's sessions are revoked | Log in 3 times (3 refresh tokens) → logout-all → refresh with each token → `401` | ✅ | |
+| ALL-03 | DB | All of the user's `refresh_tokens` records have `revoked = true` | ✅ | |
+| ALL-04 | **Another** user's sessions are not affected | User A calls logout-all → User B's refresh → `200` | ✅ | |
+| ALL-05 | The cookie is removed | `Set-Cookie` with `Max-Age=0` | ✅ | |
+| ALL-06 | New login after logout-all | `200`, the new session works | ✅ | |
+| ALL-07 | Access token after logout-all | ❓ Remains valid until expiry. For "log out of all devices" this matters — record as a risk | ❌ | Actual: old access token after logout-all → 200. after "log out of all devices" access tokens stay valid for up to 30 min → **[FAT-20](https://github.com/Requime31/fastapi-api-testing/issues/20)** R-08 |
+| ALL-08 | No `Authorization` header | `401` or `403` (`HTTPBearer` behaviour). Cross-check with Swagger, which documents `401` | ❌ | Actual: 403 {"detail": "Not authenticated"} → **[FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13)** R-06 |
+| ALL-09 | Invalid access token (random string) | `401`, `"Invalid or expired token"` | ✅ | |
+| ALL-10 | Expired access token | `401` | ✅ | a token with exp in the past, signed with the stand's key |
+| ALL-11 | JWT signed with a different key | `401` | ✅ | |
+| ALL-12 | JWT with a modified `user_id` in the payload without re-signing | `401` | ✅ | |
+| ALL-13 | Wrong scheme: `Authorization: Token <jwt>` / `Basic ...` / no `Bearer` | `401` / `403` | ✅ | |
+| ALL-14 | Refresh cookie only, no access token | `401` / `403` | ✅ | |
+| ALL-15 | User without active sessions | `200`, no errors | ✅ | |
+| ALL-16 | Record in `logs` | `level = INFO`, `user_id` set | ✅ | R-12 |
 
 ---
 
-## 6. Сквозные проверки безопасности и контракта (Auth)
+## 6. Cross-cutting security and contract checks (Auth)
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| SEC-01 | Защищённый эндпоинт без токена (`GET /items/`) | `401` / `403`. Сверить с документацией | ✅ | 403 вместо 401 — в Swagger для защищённых эндпоинтов коды не описаны R-06 |
-| SEC-02 | JWT с `"alg": "none"` | `401` | ✅ | |
-| SEC-03 | Валидный JWT удалённого пользователя (удалить из БД) | `401`, `"User not found"` | ✅ | |
-| SEC-04 | Валидный JWT деактивированного пользователя (`is_active = false`) | ❓ `401` / `403` | ❌ | Факт: 200 [] → **[FAT-10](https://github.com/Requime31/fastapi-api-testing/issues/10)** R-10 |
-| SEC-05 | JWT с `exp` в далёком будущем, подписанный чужим ключом | `401` | ✅ | |
-| SEC-06 | Ошибки не раскрывают внутренности | В ответах нет stack trace, SQL, путей файлов | ✅ | |
-| SEC-07 | Логи не содержат паролей и токенов | Проверить таблицу `logs` и `docker-compose logs api` после всех проверок модуля | ✅ | R-12 |
-| SEC-08 | Email (PII) в логах | ❓ Email записывается в `logs.message` в открытом виде. Зафиксировать как замечание | ❌ | Факт: записей logs с email этого прогона: 82 → **[FAT-17](https://github.com/Requime31/fastapi-api-testing/issues/17)** R-12 |
-| SEC-09 | `Content-Type` ответов | `application/json` для всех эндпоинтов | ✅ | |
-| SEC-10 | Коды ответов соответствуют Swagger (`/openapi.json`) | Каждый задокументированный код воспроизводим; недокументированные коды (`403`, `422`) — зафиксировать | ❌ | Факт: не воспроизведены: ['/users/refresh:422', '/users/logout:422']; недокументированные: ['/users/logout-all:403'] → **[FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13)** R-06 |
-| SEC-11 | Cookie по HTTP (localhost) | ❓ Cookie с флагом `Secure` по HTTP: сохраняется ли он и отправляется ли при refresh (Postman / браузер)? Поведение по HTTPS не проверяется (нет HTTPS-стенда) — отметить как ограничение | ✅ | клиент со строгой обработкой Secure не отправляет cookie по HTTP; Chrome считает localhost безопасным контекстом и отправляет. HTTPS не проверялся (нет стенда) R-09 |
+| SEC-01 | Protected endpoint without a token (`GET /items/`) | `401` / `403`. Cross-check with the documentation | ✅ | 403 instead of 401 — codes for protected endpoints are not documented in Swagger R-06 |
+| SEC-02 | JWT with `"alg": "none"` | `401` | ✅ | |
+| SEC-03 | Valid JWT of a deleted user (delete from the DB) | `401`, `"User not found"` | ✅ | |
+| SEC-04 | Valid JWT of a deactivated user (`is_active = false`) | ❓ `401` / `403` | ❌ | Actual: 200 [] → **[FAT-10](https://github.com/Requime31/fastapi-api-testing/issues/10)** R-10 |
+| SEC-05 | JWT with `exp` far in the future, signed with a foreign key | `401` | ✅ | |
+| SEC-06 | Errors do not expose internals | No stack trace, SQL or file paths in responses | ✅ | |
+| SEC-07 | Logs contain no passwords or tokens | Check the `logs` table and `docker compose logs api` after all module checks | ✅ | R-12 |
+| SEC-08 | Email (PII) in logs | ❓ Emails are written to `logs.message` in plain text. Record as a remark | ❌ | Actual: logs records with emails of this run: 82 → **[FAT-17](https://github.com/Requime31/fastapi-api-testing/issues/17)** R-12 |
+| SEC-09 | Response `Content-Type` | `application/json` for all endpoints | ✅ | |
+| SEC-10 | Response codes match Swagger (`/openapi.json`) | Every documented code is reproducible; undocumented codes (`403`, `422`) are recorded | ❌ | Actual: not reproduced: ['/users/refresh:422', '/users/logout:422']; undocumented: ['/users/logout-all:403'] → **[FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13)** R-06 |
+| SEC-11 | Cookie over HTTP (localhost) | ❓ `Secure` cookie over HTTP: is it stored and sent on refresh (Postman / browser)? HTTPS behaviour is not checked (no HTTPS stand) — mark as a limitation | ✅ | a client with strict Secure handling does not send the cookie over HTTP; Chrome treats localhost as a secure context and sends it. HTTPS not checked (no stand) R-09 |
 
 ---
 
-## 7. E2E-сценарии
+## 7. E2E scenarios
 
-| ID | Сценарий | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Scenario | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| E2E-01 | Register → Login → `GET /items/` → Refresh → `GET /items/` с новым токеном → Logout → Refresh | Все шаги успешны, последний refresh → `401` | ✅ | |
-| E2E-02 | Login (устройство 1) → Login (устройство 2) → Logout устройства 1 → Refresh устройства 2 → Logout-all → Refresh устройства 2 | `200` → … → последний refresh `401` | ✅ | |
-| E2E-03 | Register → повторный Register → Login с неверным паролем → Login с верным | `201` → `400` → `401` → `200`; в `logs` 4 записи с корректными уровнями | ✅ | |
+| E2E-01 | Register → Login → `GET /items/` → Refresh → `GET /items/` with the new token → Logout → Refresh | All steps succeed, the last refresh → `401` | ✅ | |
+| E2E-02 | Login (device 1) → Login (device 2) → Logout device 1 → Refresh device 2 → Logout-all → Refresh device 2 | `200` → … → the last refresh `401` | ✅ | |
+| E2E-03 | Register → repeated Register → Login with a wrong password → Login with the correct one | `201` → `400` → `401` → `200`; 4 records with correct levels in `logs` | ✅ | |
 
 ---
 
-## Итоги прогона
+## Run summary
 
-| Раздел | Всего | ✅ | ❌ | ⚠️ | ⏭ |
+| Section | Total | ✅ | ❌ | ⚠️ | ⏭ |
 |---|---|---|---|---|---|
 | 1. Register | 32 | 25 | 7 | 0 | 0 |
 | 2. Login | 25 | 21 | 4 | 0 | 0 |
@@ -224,32 +224,32 @@
 | 5. Logout-all | 16 | 14 | 2 | 0 | 0 |
 | 6. Security / Contract | 11 | 8 | 3 | 0 | 0 |
 | 7. E2E | 3 | 3 | 0 | 0 | 0 |
-| **Итого** | **118** | **98** | **19** | **0** | **1** |
+| **Total** | **118** | **98** | **19** | **0** | **1** |
 
-Pass rate: **83.8%** (без учёта ⏭). Exit Criteria «≥ 95% пройдено» для модуля не выполнен.
+Pass rate: **83.8%** (excluding ⏭). The module does not meet the exit criterion "≥ 95% passed".
 
-**Найденные дефекты:** заведены в Jira (проект FAT, родитель FAT-1) и зеркалированы в GitHub Issues — ключ FAT-N соответствует issue #N.
+**Defects found:** filed in Jira (project FAT, parent FAT-1) and mirrored to GitHub Issues — key FAT-N matches issue #N.
 
-| Jira / GitHub | Проверка | Заголовок | Severity |
+| Jira / GitHub | Check | Title | Severity |
 |---|---|---|---|
-| [FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8) | REG-15, REG-16, REG-17 | Регистрация: пароль не валидируется — принимаются пустой, из пробелов и короче заявленных 6 символов | Major |
-| [FAT-9](https://github.com/Requime31/fastapi-api-testing/issues/9) | REG-13, LOG-11 | Email чувствителен к регистру: `User@x.com` и `user@x.com` — два разных аккаунта, логин в другом регистре → 404 | Major |
-| [FAT-10](https://github.com/Requime31/fastapi-api-testing/issues/10) | LOG-23, SEC-04 | Пользователь с `is_active = false` может логиниться, его токены продолжают работать | Major |
-| [FAT-11](https://github.com/Requime31/fastapi-api-testing/issues/11) | LOG-15, LOG-24 | Login: перебор email (user enumeration) — разные ответы 401/404 и разное время ответа (~4 мс vs ~250 мс) | Major |
-| [FAT-12](https://github.com/Requime31/fastapi-api-testing/issues/12) | REG-10 | Пароль молча обрезается до 72 байт (bcrypt): пароли, отличающиеся после 72-го символа, равнозначны | Minor |
-| [FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13) | ALL-08, SEC-10 | Запрос без `Authorization` возвращает 403 `Not authenticated` вместо задокументированного 401 | Minor |
-| [FAT-14](https://github.com/Requime31/fastapi-api-testing/issues/14) | OUT-08 | Logout с несуществующим refresh-токеном возвращает 200 `Logged out` | Minor |
-| [FAT-15](https://github.com/Requime31/fastapi-api-testing/issues/15) | REG-27 | Регистрация: `phone: null` отклоняется с 422, хотя поле необязательное | Minor |
-| [FAT-16](https://github.com/Requime31/fastapi-api-testing/issues/16) | REG-26 | Регистрация: формат `phone` не валидируется (`abc`, 50 цифр) | Minor |
-| [FAT-17](https://github.com/Requime31/fastapi-api-testing/issues/17) | SEC-08 | Email пользователей (PII) записываются в `logs.message` в открытом виде | Minor |
-| [FAT-18](https://github.com/Requime31/fastapi-api-testing/issues/18) | REF-12 | Нет reuse detection: после повторного использования отозванного refresh-токена цепочка остаётся рабочей | Minor |
-| [FAT-19](https://github.com/Requime31/fastapi-api-testing/issues/19) | OUT-11 | Лог logout не содержит `user_id` | Trivial |
+| [FAT-8](https://github.com/Requime31/fastapi-api-testing/issues/8) | REG-15, REG-16, REG-17 | Registration: password is not validated — empty, whitespace-only and shorter than 6 characters are accepted | Major |
+| [FAT-9](https://github.com/Requime31/fastapi-api-testing/issues/9) | REG-13, LOG-11 | Email is case-sensitive: `User@x.com` and `user@x.com` are different accounts, login in another case → 404 | Major |
+| [FAT-10](https://github.com/Requime31/fastapi-api-testing/issues/10) | LOG-23, SEC-04 | A user with `is_active = false` can log in and their tokens keep working | Major |
+| [FAT-11](https://github.com/Requime31/fastapi-api-testing/issues/11) | LOG-15, LOG-24 | Login: email enumeration — different responses (401 / 404) and response times (~4 ms vs ~250 ms) | Major |
+| [FAT-12](https://github.com/Requime31/fastapi-api-testing/issues/12) | REG-10 | Password is silently truncated to 72 bytes (bcrypt) | Minor |
+| [FAT-13](https://github.com/Requime31/fastapi-api-testing/issues/13) | ALL-08, SEC-10 | Request without `Authorization` returns 403 instead of the documented 401 | Minor |
+| [FAT-14](https://github.com/Requime31/fastapi-api-testing/issues/14) | OUT-08 | Logout with a non-existent refresh token returns 200 "Logged out" | Minor |
+| [FAT-15](https://github.com/Requime31/fastapi-api-testing/issues/15) | REG-27 | Registration: `phone: null` is rejected with 422 although the field is optional | Minor |
+| [FAT-16](https://github.com/Requime31/fastapi-api-testing/issues/16) | REG-26 | Registration: `phone` format is not validated | Minor |
+| [FAT-17](https://github.com/Requime31/fastapi-api-testing/issues/17) | SEC-08 | User emails (PII) are written to `logs.message` in plain text | Minor |
+| [FAT-18](https://github.com/Requime31/fastapi-api-testing/issues/18) | REF-12 | No reuse detection: the token chain keeps working after a revoked refresh token is reused | Minor |
+| [FAT-19](https://github.com/Requime31/fastapi-api-testing/issues/19) | OUT-11 | Logout log record has no `user_id` | Trivial |
 
-**Вопросы к разработчику (по пунктам ❓):** заведены задачами с меткой `question`.
+**Questions to the developer (❓ checks):** filed as tasks with the `question` label.
 
-| Jira / GitHub | Проверка | Вопрос | Ответ |
+| Jira / GitHub | Check | Question | Answer |
 |---|---|---|---|
-| [FAT-20](https://github.com/Requime31/fastapi-api-testing/issues/20) | ALL-07, OUT-06, REF-06 | Access-токен остаётся валидным до 30 мин после logout / logout-all (stateless JWT). Это принятое ограничение или нужен denylist / короткий TTL? | |
-| [FAT-21](https://github.com/Requime31/fastapi-api-testing/issues/21) | LOG-10 | В payload JWT нет `iat`/`jti`: два логина в одну секунду дают идентичный access-токен (в прогоне 10.11 воспроизвелось 1 раз из 2). Нужна ли уникальность токена? | |
-| [FAT-22](https://github.com/Requime31/fastapi-api-testing/issues/22) | SEC-10 | Swagger для `/users/refresh` и `/users/logout` описывает 422, который недостижим (FastAPI генерирует его автоматически). Убрать из спецификации? | |
-| [FAT-23](https://github.com/Requime31/fastapi-api-testing/issues/23) | REF-19 | У `refresh_tokens.user_id` и `items.owner_id` нет `ON DELETE CASCADE` — пользователя с сессиями нельзя удалить. Как планируется удаление аккаунтов? | |
+| [FAT-20](https://github.com/Requime31/fastapi-api-testing/issues/20) | ALL-07, OUT-06, REF-06 | The access token stays valid for up to 30 min after logout / logout-all (stateless JWT). Is this an accepted limitation or is a denylist / shorter TTL needed? | |
+| [FAT-21](https://github.com/Requime31/fastapi-api-testing/issues/21) | LOG-10 | The JWT payload has no `iat` / `jti`: two logins within one second produce an identical access token (reproduced in 1 of 2 runs). Is token uniqueness required? | |
+| [FAT-22](https://github.com/Requime31/fastapi-api-testing/issues/22) | SEC-10 | Swagger documents an unreachable 422 for `/users/refresh` and `/users/logout` (auto-generated by FastAPI). Remove it from the spec? | |
+| [FAT-23](https://github.com/Requime31/fastapi-api-testing/issues/23) | REF-19 | `refresh_tokens.user_id` and `items.owner_id` have no `ON DELETE CASCADE` — a user with sessions cannot be deleted. How is account deletion planned? | |

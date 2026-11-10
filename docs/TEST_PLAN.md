@@ -1,336 +1,337 @@
 # Test Plan — FastAPI Project (REST API)
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Документ | Test Plan |
-| Версия документа | 1.0 |
-| Тестируемая версия продукта | API v1.7.0 (ветка `master`, коммит `660708b`) |
-| Автор | QA Engineer |
-| Дата | 06.11.2026 |
-| Статус | Draft |
+| Document | Test Plan |
+| Document version | 1.1 |
+| Product version under test | API v1.7.0 (branch `master`, commit `660708b`) |
+| Author | QA Engineer |
+| Date | 06.11.2026 (updated 10.11.2026) |
+| Status | Draft |
 
 ---
 
-## 1. Введение
+## 1. Introduction
 
-### 1.1 Цель документа
-Определить объём, подход, ресурсы, окружения, критерии и график тестирования REST API проекта FastAPI Project. Документ служит основой для разработки чек-листов, тест-кейсов и отчёта о тестировании.
+### 1.1 Purpose
+Define the scope, approach, resources, environments, criteria and schedule for testing the REST API of FastAPI Project. The document is the basis for checklists, test cases and the test summary report.
 
-### 1.2 Описание продукта
-Backend-сервис на **FastAPI + PostgreSQL**, запускаемый в Docker. Исходный код — [nisanMan/fastapi-project](https://github.com/nisanMan/fastapi-project); тестируется локальная копия. Архитектура:
+### 1.2 Product overview
+A **FastAPI + PostgreSQL** backend service running in Docker. Source code: [nisanMan/fastapi-project](https://github.com/nisanMan/fastapi-project); a local copy is tested. Architecture:
 
 ```
 Request → SlowAPI (rate limit) → CORS → Router → Service → Repository → DB
 ```
 
-Ключевые возможности:
-- регистрация и аутентификация пользователей (JWT access token + refresh token в httpOnly cookie, ротация refresh-токенов);
-- выход из текущей сессии и из всех сессий;
-- CRUD для сущности **Item** с проверкой владельца и soft delete;
-- пагинация списка всех items;
-- rate limiting (по IP);
-- структурированное JSON-логирование с сохранением в таблицу `logs`;
-- health check приложения и БД;
-- миграции Alembic при старте приложения.
+Key features:
+- user registration and authentication (JWT access token + refresh token in an httpOnly cookie, refresh token rotation);
+- logout from the current session and from all sessions;
+- CRUD for the **Item** entity with ownership checks and soft delete;
+- pagination of the list of all items;
+- rate limiting (per IP);
+- structured JSON logging persisted to the `logs` table;
+- application and database health check;
+- Alembic migrations on application startup.
 
-### 1.3 Источники требований (Test Basis)
-Отдельного ТЗ нет, поэтому требования восстанавливаются из:
-- `README.md` (описание эндпоинтов, auth flow, переменные окружения);
-- Swagger / OpenAPI (`/docs`, `/openapi.json`) — описания и коды ответов эндпоинтов;
-- исходный код (`app/`) — фактическое поведение;
-- `tests/TESTING.md` — существующее автотестовое покрытие;
-- результаты проведённого smoke-тестирования.
+### 1.3 Test basis
+There is no formal specification, so requirements are reconstructed from:
+- `README.md` (endpoints, auth flow, environment variables);
+- Swagger / OpenAPI (`/docs`, `/openapi.json`) — endpoint descriptions and response codes;
+- source code (`app/`) — actual behaviour;
+- `tests/TESTING.md` — existing unit test coverage;
+- results of the smoke test.
 
-> Расхождения между документацией (README / Swagger) и фактическим поведением считаются дефектами — документации или кода — и заводятся в баг-трекер.
+> Discrepancies between the documentation (README / Swagger) and actual behaviour are treated as defects — of the documentation or of the code — and filed in the bug tracker.
 
 ---
 
-## 2. Объём тестирования (Scope)
+## 2. Scope
 
-### 2.1 Тестируемые функции (In Scope)
+### 2.1 In scope
 
-| ID | Модуль | Эндпоинт | Auth | Приоритет |
+| ID | Module | Endpoint | Auth | Priority |
 |---|---|---|---|---|
-| F-01 | Регистрация | `POST /users/register` | — | High |
-| F-02 | Логин | `POST /users/login` | — | Critical |
-| F-03 | Обновление токена | `POST /users/refresh` | cookie | Critical |
+| F-01 | Registration | `POST /users/register` | — | High |
+| F-02 | Login | `POST /users/login` | — | Critical |
+| F-03 | Token refresh | `POST /users/refresh` | cookie | Critical |
 | F-04 | Logout | `POST /users/logout` | cookie | High |
-| F-05 | Logout со всех устройств | `POST /users/logout-all` | Bearer | High |
-| F-06 | Создание item | `POST /items/` | Bearer | High |
-| F-07 | Мои items | `GET /items/` | Bearer | High |
-| F-08 | Все items (пагинация) | `GET /items/all?page=&limit=` | Bearer | Medium |
-| F-09 | Обновление item | `PUT /items/{item_id}` | Bearer | High |
-| F-10 | Удаление item (soft) | `DELETE /items/{item_id}` | Bearer | High |
+| F-05 | Logout from all devices | `POST /users/logout-all` | Bearer | High |
+| F-06 | Create item | `POST /items/` | Bearer | High |
+| F-07 | My items | `GET /items/` | Bearer | High |
+| F-08 | All items (pagination) | `GET /items/all?page=&limit=` | Bearer | Medium |
+| F-09 | Update item | `PUT /items/{item_id}` | Bearer | High |
+| F-10 | Delete item (soft) | `DELETE /items/{item_id}` | Bearer | High |
 | F-11 | Health check | `GET /health` | — | Medium |
-| F-12 | Rate limiting | все эндпоинты | — | High |
-| F-13 | Логирование в БД | таблица `logs` | — | Medium |
-| F-14 | CORS | все эндпоинты | — | Low |
-| F-15 | API-документация | `/docs`, `/openapi.json` | — | Low |
+| F-12 | Rate limiting | all endpoints | — | High |
+| F-13 | Logging to DB | `logs` table | — | Medium |
+| F-14 | CORS | all endpoints | — | Low |
+| F-15 | API documentation | `/docs`, `/openapi.json` | — | Low |
 
-### 2.2 Не тестируется (Out of Scope)
+### 2.2 Out of scope
 
-| Что | Причина |
+| What | Reason |
 |---|---|
-| Email Verification, Password Reset | Не реализовано (Roadmap v1.6 `[~]`) |
-| Версионирование API, метрики | Перенесено на v2.0 |
-| Redis, Nginx, фоновые задачи | Не реализовано (v2.0) |
-| UI / frontend | Отсутствует, проект — только API |
-| Полноценное нагрузочное тестирование | Нет выделенного стенда. Допускается лёгкая проверка rate limit на локальном стенде |
-| Production-окружение автора (Railway) | Чужой сервис: тестирование без разрешения владельца недопустимо. Всё тестирование — только на локальном стенде |
-| CI/CD pipeline | Зона ответственности DevOps; проверяется только, что автотесты в CI проходят |
-| Внутренние библиотеки (passlib, python-jose, slowapi) | Сторонний код, тестируется только интеграция с ним |
+| Email verification, password reset | Not implemented (Roadmap v1.6 `[~]`) |
+| API versioning, metrics | Postponed to v2.0 |
+| Redis, Nginx, background tasks | Not implemented (v2.0) |
+| UI / frontend | None — the project is API only |
+| Full load testing | No dedicated environment. A light rate limit check on the local stand is allowed |
+| Author's production environment (Railway) | Someone else's service: testing without the owner's permission is not acceptable. All testing is done on the local stand only |
+| CI/CD pipeline | DevOps responsibility; only checked that unit tests pass in CI |
+| Third-party libraries (passlib, python-jose, slowapi) | Third-party code; only the integration is tested |
 
 ---
 
-## 3. Подход к тестированию (Test Strategy)
+## 3. Test strategy
 
-### 3.1 Уровни тестирования
+### 3.1 Test levels
 
-| Уровень | Что проверяем | Кто / чем |
+| Level | What is tested | Who / how |
 |---|---|---|
-| Unit / Component | Сервисы, репозитории | Разработчик, pytest (уже есть, coverage 96%) |
-| **API (интеграционный)** | Эндпоинты через HTTP: контракт, статусы, бизнес-логика | **QA — основной фокус**, Postman + Swagger |
-| **БД** | Корректность данных после операций API | **QA**, psql |
-| System / E2E | Сквозные сценарии (регистрация → логин → CRUD → logout) | QA, Postman Runner (Collection flow) |
+| Unit / Component | Services, repositories | Developer, pytest (exists, 96% coverage) |
+| **API (integration)** | Endpoints over HTTP: contract, status codes, business logic | **QA — main focus**, Postman + Swagger + run scripts |
+| **Database** | Data correctness after API operations | **QA**, psql |
+| System / E2E | End-to-end scenarios (register → login → CRUD → logout) | QA, Postman Runner, run scripts |
 
-### 3.2 Виды тестирования
+### 3.2 Test types
 
-| Вид | Описание | Применение |
+| Type | Description | Applied to |
 |---|---|---|
-| Smoke | Базовая работоспособность ключевых эндпоинтов | ✅ Выполнено. Повторяется на каждой новой сборке |
-| Функциональное (позитивное) | Корректные данные → ожидаемый результат | Все функции F-01…F-11 |
-| Функциональное (негативное) | Невалидные данные, отсутствующие поля, неверные типы, граничные значения | Все функции с входными данными |
-| Контрактное | Соответствие ответов OpenAPI-схеме: коды, структура JSON, типы полей, заголовки | Все эндпоинты |
-| Тестирование авторизации и доступа | Доступ без токена, с просроченным / подделанным / отозванным токеном, доступ к чужим ресурсам (IDOR) | F-02…F-10 |
-| Тестирование безопасности (базовое) | Хранение паролей, атрибуты cookie, user enumeration, утечка данных в ответах и логах, SQL-инъекции во входных полях | Auth-модуль, items |
-| Тестирование rate limiting | Превышение лимитов, формат 429, сброс окна | F-12 |
-| Тестирование данных (БД) | Записи в `users`, `items`, `refresh_tokens`, `logs` после операций | F-01…F-13 |
-| Регрессионное | Повторный прогон после исправления дефектов | Postman Collection + pytest |
-| Confirmation (re-test) | Проверка исправления конкретного бага | По каждому закрытому дефекту |
+| Smoke | Basic operability of key endpoints | ✅ Done. Repeated on every new build |
+| Functional (positive) | Valid data → expected result | All features F-01…F-11 |
+| Functional (negative) | Invalid data, missing fields, wrong types, boundary values | All features with input |
+| Contract | Responses match the OpenAPI schema: codes, JSON structure, field types, headers | All endpoints |
+| Authorization and access control | Access without a token, with an expired / forged / revoked token, access to other users' resources (IDOR) | F-02…F-10 |
+| Security (basic) | Password storage, cookie attributes, user enumeration, data leaks in responses and logs, SQL injection in input fields | Auth module, items |
+| Rate limiting | Exceeding limits, 429 format, window reset | F-12 |
+| Data (DB) | Records in `users`, `items`, `refresh_tokens`, `logs` after operations | F-01…F-13 |
+| Regression | Re-run after defect fixes | Run scripts + Postman Collection + pytest |
+| Confirmation (re-test) | Verifying the fix of a specific bug | Every fixed defect |
 
-### 3.3 Техники тест-дизайна
-- **Классы эквивалентности** — email, password, title/description, `page`, `limit`, `item_id`.
-- **Граничные значения** — длина пароля (заявлено min 6 символов → 5 / 6 / 7), `page` и `limit` (−1 / 0 / 1 / большое число), лимиты rate limit (N / N+1 запрос).
-- **Таблица принятия решений** — права на операции с item (владелец / не владелец / item удалён / item не существует).
-- **Диаграмма состояний** — жизненный цикл refresh-токена: `active → rotated (revoked) / revoked by logout / revoked by logout-all / expired`.
-- **Попарное тестирование** — комбинации параметров пагинации.
-- **Error guessing / исследовательское тестирование** — на основе анализа кода и результатов smoke.
+### 3.3 Test design techniques
+- **Equivalence partitioning** — email, password, title/description, `page`, `limit`, `item_id`.
+- **Boundary values** — password length (documented min 6 → 5 / 6 / 7), `page` and `limit` (−1 / 0 / 1 / large number), rate limits (N / N+1 requests).
+- **Decision table** — permissions on item operations (owner / not owner / item deleted / item does not exist).
+- **State transition** — refresh token lifecycle: `active → rotated (revoked) / revoked by logout / revoked by logout-all / expired`.
+- **Pairwise testing** — combinations of pagination parameters.
+- **Error guessing / exploratory testing** — based on code analysis and smoke test results.
 
-### 3.4 Области повышенного риска
-Выявлены при анализе кода и документации. Это **гипотезы для проверки**, а не подтверждённые дефекты.
+### 3.4 Risk areas
+Identified during code and documentation analysis. These are **hypotheses to verify**, not confirmed defects.
 
-| # | Область | Что проверить | Риск |
+| # | Area | What to check | Risk |
 |---|---|---|---|
-| R-01 | Валидация пароля | Swagger заявляет «minimum 6 characters» — соблюдается ли это фактически? Пустой пароль? | High |
-| R-02 | Валидация полей item | Пустые `title` / `description`, очень длинные строки, спецсимволы, unicode, HTML/JS | Medium |
-| R-03 | Пагинация `/items/all` | `page=0`, отрицательные значения, `limit=0`, нечисловые значения, `page` больше `pages` | High |
-| R-04 | Soft delete | Попадают ли удалённые items в выдачу `/items/` и `/items/all`? Учитываются ли в `total`? | High |
-| R-05 | Состав ответа | Какие поля возвращаются в items (нет ли лишних служебных полей)? Соответствует ли ответ схеме `ItemResponse`? | Medium |
-| R-06 | Коды ответов | Соответствие задокументированным кодам (`201`, `204`, `400`, `401`, `403`, `404`, `422`, `429`); есть ли тело у `204` | Medium |
-| R-07 | User enumeration | Различаются ли ответы логина для несуществующего пользователя и неверного пароля? | Medium |
-| R-08 | Жизненный цикл токенов | Работает ли access token после logout / logout-all? Что делает logout с невалидным cookie? Повторное использование старого refresh-токена | High |
-| R-09 | Cookie | Атрибуты `HttpOnly`, `Secure`, `SameSite`, `Max-Age`; поведение по HTTP (localhost); HTTPS-стенда нет — ограничение | Medium |
-| R-10 | Неактивные пользователи | Поле `is_active` в модели — влияет ли на логин и доступ? | Low |
-| R-11 | Rate limiting за прокси | Лимит считается по IP клиента: при развёртывании за reverse proxy все клиенты могут получить общий лимит (анализ кода + проверка в Docker) | Medium |
-| R-12 | Логи | Попадают ли персональные данные (email) в логи; создаются ли записи для всех ключевых событий | Medium |
-| R-13 | Регистр email | `User@Mail.com` и `user@mail.com` — один пользователь или два? | Medium |
-| R-14 | Поле `phone` | Отсутствие валидации формата | Low |
-| R-15 | CORS | Разрешён только `http://localhost:3000`; preflight-запросы, запрещённые origin / методы | Low |
+| R-01 | Password validation | Swagger states "minimum 6 characters" — is it enforced? Empty password? | High |
+| R-02 | Item field validation | Empty `title` / `description`, very long strings, special characters, unicode, HTML/JS | Medium |
+| R-03 | Pagination `/items/all` | `page=0`, negative values, `limit=0`, non-numeric values, `page` greater than `pages` | High |
+| R-04 | Soft delete | Do deleted items appear in `/items/` and `/items/all`? Are they counted in `total`? | High |
+| R-05 | Response fields | Which item fields are returned (any internal fields)? Does the response match the `ItemResponse` schema? | Medium |
+| R-06 | Response codes | Match with documented codes (`201`, `204`, `400`, `401`, `403`, `404`, `422`, `429`); does `204` have a body | Medium |
+| R-07 | User enumeration | Do login responses differ for a non-existent user and a wrong password? | Medium |
+| R-08 | Token lifecycle | Does the access token work after logout / logout-all? What does logout do with an invalid cookie? Reuse of an old refresh token | High |
+| R-09 | Cookie | `HttpOnly`, `Secure`, `SameSite`, `Max-Age` attributes; behaviour over HTTP (localhost); no HTTPS stand — limitation | Medium |
+| R-10 | Inactive users | Does the `is_active` model field affect login and access? | Low |
+| R-11 | Rate limiting behind a proxy | The limit is keyed by client IP: behind a reverse proxy all clients may share one limit (code analysis + check in Docker) | Medium |
+| R-12 | Logs | Does personal data (email) end up in logs; are records created for all key events | Medium |
+| R-13 | Email case | `User@Mail.com` and `user@mail.com` — one user or two? | Medium |
+| R-14 | `phone` field | No format validation | Low |
+| R-15 | CORS | Only `http://localhost:3000` is allowed; preflight requests, disallowed origins / methods | Low |
 
 ---
 
-## 4. Тестовые окружения
+## 4. Test environments
 
-| Окружение | URL | Назначение | Ограничения |
+| Environment | URL | Purpose | Limitations |
 |---|---|---|---|
-| **Local (Docker)** — основное | `http://localhost:8000` | Все виды тестирования, работа с БД | — |
-| CI (GitHub Actions) | — | Автотесты pytest на SQLite | Нет PostgreSQL — возможны расхождения поведения SQLite vs PostgreSQL |
+| **Local (Docker)** — main | `http://localhost:8000` | All test types, database access | — |
+| CI (GitHub Actions) | — | Unit tests (pytest) on SQLite | No PostgreSQL — SQLite vs PostgreSQL behaviour may differ |
 
-**Конфигурация локального стенда:** Docker Compose (`api` + `postgres:15`), Python 3.11, переменные из `.env`. Для тестирования истечения токенов допускается временно уменьшить `ACCESS_TOKEN_EXPIRE_MINUTES` в `.env`.
+**Local stand configuration:** Docker Compose (`api` + `postgres:15`), Python 3.11, variables from `.env`. For functional checklists the stand is started with the `qa/docker-compose.functional.yml` override (rate limits raised to `1000/minute`); for CL-03 — without it.
 
-**Тестовые данные:**
-- пользователи создаются через `/users/register` с уникальными email (например, `qa+<timestamp>@test.com`);
-- минимум 2 пользователя (User A, User B) для проверок доступа к чужим ресурсам;
-- набор items (>10 шт.) для проверки пагинации, включая удалённые;
-- данные очищаются пересозданием volume (`docker-compose down -v`).
+**Test data:**
+- users are created via `/users/register` with unique emails (e.g. `qa<run_id>_<tag>@test.com`);
+- at least 2 users (User A, User B) for access checks on other users' resources;
+- a set of items (>10) for pagination checks, including deleted ones;
+- data is reset by recreating the volume (`docker compose down -v`).
 
 ---
 
-## 5. Инструменты
+## 5. Tools
 
-| Инструмент | Назначение |
+| Tool | Purpose |
 |---|---|
-| Postman | Ручное API-тестирование, коллекция `FastAPI Project - QA Testing`, environment `Fast API Local`, Collection Runner для регресса |
-| Swagger UI (`/docs`) | Изучение контракта, быстрые ручные запросы |
-| psql / `docker exec` | Проверка состояния БД (`users`, `items`, `refresh_tokens`, `logs`) |
-| Docker Compose | Развёртывание стенда, просмотр логов (`docker-compose logs api`) |
-| pytest + pytest-cov | Существующие автотесты, регресс |
-| jwt.io | Анализ содержимого JWT |
-| **Jira** (проект `FAT`) | Основной трекер: баги, задачи на прогон, вопросы к разработчику, workflow дефектов |
-| GitHub Issues | Публичное зеркало Jira-задач в репозитории (см. 7.4) |
-| Google Sheets / Markdown | Чек-листы и тест-кейсы |
+| Run scripts (`qa/scripts/`, Python + httpx) | Executing checklists against the stand, results in `qa/runs/` |
+| Postman | Manual API testing, collection `FastAPI Project - QA Testing`, environment `Fast API Local`, Collection Runner for regression |
+| Swagger UI (`/docs`) | Exploring the contract, quick manual requests |
+| psql / `docker exec` | Checking database state (`users`, `items`, `refresh_tokens`, `logs`) |
+| Docker Compose | Deploying the stand, viewing logs (`docker compose logs api`) |
+| pytest + pytest-cov | Existing unit tests, regression |
+| jwt.io | Inspecting JWT contents |
+| **Jira** (project `FAT`) | Main tracker: bugs, run tasks, questions to the developer, defect workflow |
+| GitHub Issues | Public mirror of Jira issues in the repository (see 7.4) |
 
 ---
 
-## 6. Критерии
+## 6. Criteria
 
-### 6.1 Критерии начала тестирования (Entry Criteria)
-- Стенд развёрнут, `GET /health` возвращает `{"status": "ok", "database": "ok"}`;
-- миграции применены без ошибок;
-- smoke-тестирование пройдено ✅;
-- тест-план согласован;
-- подготовлены чек-листы и тестовые данные.
+### 6.1 Entry criteria
+- The stand is deployed, `GET /health` returns `{"status": "ok", "database": "ok"}`;
+- migrations applied without errors;
+- smoke test passed ✅;
+- test plan agreed;
+- checklists and test data prepared.
 
-### 6.2 Критерии приостановки (Suspension Criteria)
-- стенд недоступен или БД не отвечает;
-- блокирующий дефект в регистрации / логине (невозможно получить токен → блокирует ~80% проверок);
-- изменение требований / контракта API в процессе тестирования.
+### 6.2 Suspension criteria
+- the stand is unavailable or the database does not respond;
+- a blocking defect in registration / login (no token can be obtained → blocks ~80% of checks);
+- requirements / API contract change during testing.
 
-### 6.3 Критерии возобновления (Resumption Criteria)
-- блокирующий дефект исправлен и прошёл re-test;
-- стенд восстановлен, smoke повторно пройден.
+### 6.3 Resumption criteria
+- the blocking defect is fixed and re-tested;
+- the stand is restored, smoke test passed again.
 
-### 6.4 Критерии завершения (Exit Criteria)
-- выполнено 100% запланированных проверок из чек-листов;
-- ≥ 95% проверок пройдено успешно;
-- нет открытых дефектов Blocker и Critical;
-- открытые дефекты Major — согласованы и задокументированы как known issues;
-- все найденные дефекты заведены и имеют статус;
-- подготовлен Test Summary Report.
+### 6.4 Exit criteria
+- 100% of planned checklist checks executed;
+- ≥ 95% of checks passed;
+- no open Blocker or Critical defects;
+- open Major defects agreed and documented as known issues;
+- all found defects filed and have a status;
+- Test Summary Report prepared.
 
 ---
 
-## 7. Управление дефектами
+## 7. Defect management
 
-### 7.1 Severity (серьёзность)
+### 7.1 Severity
 
-| Уровень | Описание | Пример для этого проекта |
+| Level | Description | Example for this project |
 |---|---|---|
-| Blocker | Система / ключевая функция не работает, обходного пути нет | Логин всегда возвращает 500 |
-| Critical | Нарушение безопасности или потеря данных | Пользователь может изменить / удалить чужой item |
-| Major | Функция работает неверно, есть обходной путь | Пагинация возвращает неверный `total` |
-| Minor | Незначительное отклонение | Неверный код ответа при корректной логике |
-| Trivial | Косметика | Опечатка в описании Swagger |
+| Blocker | The system / a key feature does not work, no workaround | Login always returns 500 |
+| Critical | Security breach or data loss | A user can modify / delete another user's item |
+| Major | A feature works incorrectly, a workaround exists | Pagination returns a wrong `total` |
+| Minor | Minor deviation | Wrong response code with correct logic |
+| Trivial | Cosmetic | Typo in a Swagger description |
 
-### 7.2 Priority: High / Medium / Low — определяется совместно с разработчиком.
+### 7.2 Priority: Highest / High / Medium / Low / Lowest — agreed with the developer.
 
-### 7.3 Жизненный цикл дефекта
+### 7.3 Defect lifecycle
 
-Workflow типа **Баг** в Jira (интерфейс Jira на русском):
+**Bug** workflow in Jira (the Jira UI is in Russian; status names are given with English equivalents):
 
 ```
-К выполнению ──► В работе ──► Исправлено ──► Повторная проверка ──► Готово
-     │              ▲                                │
-     │              └────────── Reopened ────────────┘   (повторная проверка не пройдена)
-     └──► Отклонено                                      (не баг / дубликат / won't fix — причина в комментарии)
+To Do ──► In Progress ──► Fixed ──► Re-test ──► Done
+  │            ▲                       │
+  │            └────── Reopened ───────┘   (re-test failed)
+  └──► Rejected                            (not a bug / duplicate / won't fix — reason in a comment)
 ```
 
-| Статус Jira | Классический статус | Кто переводит |
+| Jira status (RU) | Status | Moved by |
 |---|---|---|
-| К выполнению | New / Open | QA при заведении |
-| В работе | In Progress | Разработчик |
-| Исправлено | Fixed | Разработчик (с указанием коммита) |
-| Повторная проверка | Re-test | QA берёт на проверку |
-| Готово | Closed | QA после успешной проверки |
-| Отклонено | Rejected / Duplicate / Won't fix | Разработчик или QA, с обоснованием |
+| К выполнению | To Do (New / Open) | QA when filing |
+| В работе | In Progress | Developer |
+| Исправлено | Fixed | Developer (with the commit) |
+| Повторная проверка | Re-test | QA takes it for verification |
+| Готово | Done (Closed) | QA after successful verification |
+| Отклонено | Rejected / Duplicate / Won't fix | Developer or QA, with justification |
 
-### 7.4 Трекинг: Jira + GitHub Issues
+### 7.4 Tracking: Jira + GitHub Issues
 
-**Jira — источник истины.** Любая задача сначала заводится в Jira (проект `FAT`), статусы меняются только там.
+**Jira is the source of truth.** Every issue is filed in Jira (project `FAT`) first, and statuses are changed only there. Jira is kept in Russian.
 
-| Тип в Jira | Что это | Пример |
+| Jira type | What it is | Example |
 |---|---|---|
-| Эпик | Тестовый цикл | `FAT-1` Тестирование API v1.7.0 — Test cycle 1 |
-| Задача (Task) | Подготовка / прогон чек-листа / отчёт | `FAT-3` Прогон CL-01 Auth |
-| Баг (Bug) | Дефект | `FAT-12` Пагинация: `500` при `limit=0` |
-| Задача + метка `question` | Вопрос к разработчику по пунктам ❓ | `FAT-20` Должен ли `/health` возвращать `503` при недоступной БД? |
+| Epic | Test cycle | `FAT-1` API v1.7.0 testing — Test cycle 1 |
+| Task | Preparation / checklist run / report | `FAT-3` CL-01 Auth run |
+| Bug | Defect | `FAT-8` Registration: password is not validated |
+| Task + `question` label | Question to the developer about ❓ checks | `FAT-20` Access token stays valid after logout — accepted limitation? |
 
-Все задачи цикла — дочерние к эпику цикла и находятся в спринте **Test cycle 1 — v1.7.0** (09.11–20.11.2026). Релиз `v1.7.0` заведён в проекте.
+All cycle issues are children of the cycle epic and belong to the sprint **Test cycle 1 — v1.7.0** (09.11–20.11.2026). Release `v1.7.0` exists in the project.
 
-| Поле бага | Значение |
+| Bug field | Value |
 |---|---|
-| Severity | Кастомное поле: Blocker / Critical / Major / Minor / Trivial |
+| Severity | Custom field: Blocker / Critical / Major / Minor / Trivial |
 | Priority | Highest / High / Medium / Low / Lowest |
-| Родитель | Эпик цикла (`FAT-1`) |
-| Метки | Компонент: `component-auth`, `component-items`, `component-rate-limit`, `component-health-logs-cors`, `component-api-docs`; версия `v1.7.0`; ID проверки, например `CL-02_PAG-16` |
-| Описание | Разделы по шаблону 7.5, включая **Окружение** (Local (Docker), коммит) |
-| Веб-ссылка | «mirrored in» → зеркальный GitHub issue |
+| Parent | Cycle epic (`FAT-1`) |
+| Labels | Component: `component-auth`, `component-items`, `component-rate-limit`, `component-health-logs-cors`, `component-api-docs`; version `v1.7.0`; check ID, e.g. `CL-02_PAG-16` |
+| Description | Sections per template 7.5, including **Environment** (Local (Docker), commit) |
+| Web link | "mirrored in" → the GitHub mirror issue |
 
-> Проект team-managed: компоненты и Affects versions ведутся метками, окружение — разделом описания.
+> The project is team-managed: components and affected versions are tracked with labels, the environment — as a description section.
 
-**GitHub Issues — публичное зеркало.** Jira закрыта для посторонних, поэтому каждая Jira-задача дублируется в Issues репозитория:
+**GitHub Issues — public mirror.** Jira is private, so every Jira issue is duplicated in the repository's Issues as an **English translation**:
 
 | Jira | GitHub Issues |
 |---|---|
-| Ключ и summary | Заголовок `[FAT-12] Пагинация: 500 при limit=0` |
-| Описание бага | Тело issue по шаблону + ссылка на Jira |
-| Тип | Метка `epic` / `task` / `bug` / `question` |
-| Severity | Метка `severity:*` |
-| Метка `component-*` | Метка `component:*` |
+| Key and summary | Title `[FAT-8] Registration: password is not validated…` |
+| Bug description | Issue body (translated) + link to Jira |
+| Type | Label `epic` / `task` / `bug` / `question` |
+| Severity | Label `severity:*` |
+| Label `component-*` | Label `component:*` |
 | Test cycle (sprint) | Milestone `Test cycle 1 — v1.7.0` |
-| Статус «Готово» / «Отклонено» | Issue закрыт (completed / not planned) с комментарием |
-| Прочие статусы | Issue открыт; переходы дублируются комментарием |
+| Status Готово (Done) / Отклонено (Rejected) | Issue closed (completed / not planned) with a comment |
+| Other statuses | Issue open; transitions duplicated as comments |
 
-Номера совпадают: `FAT-N` в Jira ↔ `#N` в GitHub (задачи заводятся парами по порядку). В Jira-задаче есть веб-ссылка на зеркальный issue, в issue — ссылка на Jira. Коммиты, связанные с задачей, содержат её ключ: `docs: add bug report FAT-12`.
+Numbers match: `FAT-N` in Jira ↔ `#N` on GitHub (issues are created in pairs, in order). The Jira issue has a web link to the mirror issue, the issue links back to Jira. Commits related to an issue contain its key: `docs: add bug report FAT-12`.
 
-### 7.5 Шаблон баг-репорта
-- **ID / Заголовок** — Jira-ключ; что, где, при каких условиях;
-- **Проверка** — ID из чек-листа (например, `CL-02 / PAG-16`);
-- **Окружение** — Local (Docker), коммит;
-- **Предусловия**;
-- **Шаги воспроизведения** (с запросом: метод, URL, headers, body — или cURL);
-- **Фактический результат** (статус + тело ответа);
-- **Ожидаемый результат** (со ссылкой на требование: README / Swagger / здравый смысл);
+### 7.5 Bug report template
+- **ID / Title** — Jira key; what, where, under which conditions;
+- **Check** — checklist ID (e.g. `CL-02 / PAG-16`);
+- **Environment** — Local (Docker), commit;
+- **Preconditions**;
+- **Steps to reproduce** (with the request: method, URL, headers, body — or cURL);
+- **Actual result** (status + response body);
+- **Expected result** (with the requirement source: README / Swagger / RFC / common practice);
 - **Severity / Priority**;
-- **Вложения** — скриншот Postman, логи, состояние БД.
+- **Attachments** — Postman screenshot, logs, database state, link to the code line.
 
 ---
 
-## 8. Тестовые артефакты (Deliverables)
+## 8. Deliverables
 
-| Артефакт | Этап | Статус |
+| Artifact | Stage | Status |
 |---|---|---|
-| Smoke-отчёт | До начала | ✅ Выполнено |
-| Test Plan (этот документ) | Планирование | ✅ Draft |
-| Чек-листы по модулям: [CL-01 Auth](checklists/CL-01_Auth.md) (118), [CL-02 Items](checklists/CL-02_Items.md) (117), [CL-03 Rate limit](checklists/CL-03_RateLimit.md) (50), [CL-04 Health / Logs / CORS / Docs](checklists/CL-04_Health_Logs_CORS.md) (96) — всего 381 проверка | Подготовка | ✅ Готово |
-| Тест-кейсы для критичных сценариев | Подготовка | ⏳ |
-| Postman Collection (расширенная) + Environment | Выполнение | 🔄 В процессе (TC-001…TC-010) |
-| Баг-репорты | Выполнение | ⏳ |
-| Test Summary Report | Завершение | ⏳ |
+| Smoke report | Before start | ✅ Done |
+| Test Plan (this document) | Planning | ✅ Draft |
+| Module checklists: [CL-01 Auth](checklists/CL-01_Auth.md) (118), [CL-02 Items](checklists/CL-02_Items.md) (117), [CL-03 Rate limit](checklists/CL-03_RateLimit.md) (50), [CL-04 Health / Logs / CORS / Docs](checklists/CL-04_Health_Logs_CORS.md) (96) — 381 checks total | Preparation | ✅ Ready |
+| Checklist run scripts and raw results (`qa/`) | Execution | 🔄 CL-01 done |
+| Test cases for critical scenarios | Preparation | ⏳ |
+| Postman Collection (extended) + Environment | Execution | 🔄 In progress (TC-001…TC-010) |
+| Bug reports (Jira + GitHub mirror) | Execution | 🔄 CL-01: 12 bugs, 4 questions |
+| Test Summary Report | Closure | ⏳ |
 
 ---
 
-## 9. График (ориентировочный)
+## 9. Schedule (estimate)
 
-| Этап | Активности | Оценка |
+| Stage | Activities | Estimate |
 |---|---|---|
-| 1. Анализ и планирование | Изучение требований и кода, Test Plan | 0.5 дня |
-| 2. Подготовка | Чек-листы, тест-кейсы, тестовые данные, Postman | 1 день |
-| 3. Выполнение — Auth | F-01…F-05, безопасность токенов | 1 день |
-| 4. Выполнение — Items | F-06…F-10, пагинация, soft delete, IDOR | 1 день |
-| 5. Выполнение — нефункциональное | Rate limit, логи, CORS, health, контракт | 0.5 дня |
-| 6. Регресс и re-test | Проверка исправлений | 0.5 дня |
-| 7. Отчётность | Test Summary Report | 0.5 дня |
-| **Итого** | | **~5 дней** |
+| 1. Analysis and planning | Studying requirements and code, Test Plan | 0.5 day |
+| 2. Preparation | Checklists, test cases, test data, Postman | 1 day |
+| 3. Execution — Auth | F-01…F-05, token security | 1 day |
+| 4. Execution — Items | F-06…F-10, pagination, soft delete, IDOR | 1 day |
+| 5. Execution — non-functional | Rate limit, logs, CORS, health, contract | 0.5 day |
+| 6. Regression and re-test | Verifying fixes | 0.5 day |
+| 7. Reporting | Test Summary Report | 0.5 day |
+| **Total** | | **~5 days** |
 
 ---
 
-## 10. Риски проекта и их митигация
+## 10. Project risks and mitigation
 
-| Риск | Вероятность | Влияние | Митигация |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Нет формального ТЗ — неясен ожидаемый результат | Высокая | Высокое | Опираться на README / Swagger / общепринятые практики REST; спорные моменты фиксировать как вопросы к разработчику |
-| Rate limiting мешает выполнению тестов | Высокая | Среднее | Увеличить лимиты в `.env` для функционального тестирования; проверять rate limit отдельно с дефолтными значениями |
-| Нет HTTPS-стенда — поведение `Secure`-cookie и прокси не проверить полностью | Высокая | Среднее | Проверить на HTTP, остальное — анализом кода; зафиксировать как ограничение в отчёте |
-| Различие SQLite (CI) и PostgreSQL (стенд) | Средняя | Среднее | Ручные проверки выполнять на PostgreSQL |
-| Истечение токенов (30 мин / 7 дней) сложно проверить | Высокая | Низкое | Временно уменьшить TTL в `.env`; для refresh — изменить `expires_at` в БД |
-| Cookie с флагом `Secure` по HTTP | Средняя | Среднее | Проверить поведение Postman / браузера на localhost и HTTPS отдельно |
+| No formal specification — expected results are unclear | High | High | Rely on README / Swagger / common REST practice; record disputed points as questions to the developer |
+| Rate limiting interferes with test execution | High | Medium | Raise limits with the `qa/docker-compose.functional.yml` override for functional testing; test rate limiting separately with default values |
+| No HTTPS stand — `Secure` cookie and proxy behaviour cannot be fully verified | High | Medium | Check over HTTP, the rest by code analysis; record as a limitation in the report |
+| SQLite (CI) vs PostgreSQL (stand) differences | Medium | Medium | Run manual checks on PostgreSQL |
+| Token expiry (30 min / 7 days) is hard to test | High | Low | Sign a token with an expired `exp` with the stand's key inside the container; for refresh tokens — change `expires_at` in the database |
+| `Secure` cookie over HTTP | Medium | Medium | Check Postman / browser behaviour on localhost; HTTPS separately |
 
 ---
 
-## 11. Согласование
+## 11. Sign-off
 
-| Роль | Имя | Дата | Подпись |
+| Role | Name | Date | Signature |
 |---|---|---|---|
 | QA Engineer | | | |
 | Developer / Tech Lead | | | |

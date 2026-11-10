@@ -1,238 +1,238 @@
-# Чек-лист CL-04 — Health, Logs, CORS, API Docs
+# Checklist CL-04 — Health, Logs, CORS, API Docs
 
-| Поле | Значение |
+| Field | Value |
 |---|---|
-| Модуль | F-11 Health check, F-13 Логирование, F-14 CORS, F-15 API-документация из [Test Plan](../TEST_PLAN.md) |
-| Версия продукта | API v1.7.0 |
-| Окружение | Local (Docker), `http://localhost:8000` |
-| Исполнитель | |
-| Дата прогона | |
+| Module | F-11 Health check, F-13 Logging, F-14 CORS, F-15 API documentation from the [Test Plan](../TEST_PLAN.md) |
+| Product version | API v1.7.0 |
+| Environment | Local (Docker), `http://localhost:8000` |
+| Executed by | |
+| Run date | |
 
-**Легенда:**
-- **Приоритет:** H — High, M — Medium, L — Low
-- **Статус:** ✅ Passed · ❌ Failed · ⚠️ Blocked · ⏭ Skipped
-- **❓** — требование не задокументировано явно; ожидаемый результат основан на общепринятой практике, при расхождении завести вопрос / баг
-- **R-xx** — ссылка на зону риска из Test Plan
+**Legend:**
+- **Priority:** H — High, M — Medium, L — Low
+- **Status:** ✅ Passed · ❌ Failed · ⚠️ Blocked · ⏭ Skipped
+- **❓** — the requirement is not explicitly documented; the expected result is based on common practice; on mismatch, file a question / bug
+- **R-xx** — reference to a risk area in the Test Plan
 
-**Предусловия для всего модуля:**
-1. Стенд запущен, лимиты в `.env` увеличены до `1000/minute` (rate limit проверен в [CL-03](CL-03_RateLimit.md)).
-2. Открыт доступ к БД: `docker exec -it fastapi_postgres psql -U postgres -d fastapi_db`.
-3. Открыты логи контейнера в отдельном терминале: `docker-compose logs -f api`.
+**Preconditions for the whole module:**
+1. The stand is started with `qa/docker-compose.functional.yml` (limits `1000/minute`; rate limiting is tested in [CL-03](CL-03_RateLimit.md)).
+2. Database access is open: `docker exec -it fastapi_postgres psql -U postgres -d fastapi_db`.
+3. Container logs are open in a separate terminal: `docker compose logs -f api`.
 
 ---
 
 ## 1. Health check — `GET /health` (F-11)
 
-### 1.1 Штатная работа
+### 1.1 Normal operation
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| HL-01 | Запрос при работающих API и БД | `200`, `{"status": "ok", "database": "ok"}` | H | | |
-| HL-02 | Доступ без авторизации | `200`: эндпоинт публичный | H | | |
-| HL-03 | С любым `Authorization` (невалидный токен) | `200`: токен игнорируется | L | | |
-| HL-04 | Структура и типы ответа | Ровно два строковых поля `status` и `database`; `Content-Type: application/json` | M | | |
-| HL-05 | Ответ не раскрывает чувствительных данных | Нет версий ПО, строки подключения, имени хоста БД, переменных окружения | H | | |
-| HL-06 | Время ответа | ❓ < 200 мс на локальном стенде (health вызывается мониторингом часто) | L | | |
-| HL-07 | Метод `HEAD /health` | ❓ `200` без тела: некоторые системы мониторинга используют `HEAD`. Зафиксировать фактический ответ | L | | |
-| HL-08 | Неподдерживаемые методы (`POST`, `DELETE`) | `405 Method Not Allowed` | L | | |
-| HL-09 | Путь `/health/` (со слэшем) | `307` redirect на `/health` или `404`. Зафиксировать | L | | |
+| HL-01 | Request with API and DB running | `200`, `{"status": "ok", "database": "ok"}` | H | | |
+| HL-02 | Access without authorization | `200`: public endpoint | H | | |
+| HL-03 | With any `Authorization` (invalid token) | `200`: the token is ignored | L | | |
+| HL-04 | Response structure and types | Exactly two string fields `status` and `database`; `Content-Type: application/json` | M | | |
+| HL-05 | The response does not expose sensitive data | No software versions, connection string, DB host name, environment variables | H | | |
+| HL-06 | Response time | ❓ < 200 ms on the local stand (health is polled often by monitoring) | L | | |
+| HL-07 | `HEAD /health` method | ❓ `200` without a body: some monitoring systems use `HEAD`. Record the actual response | L | | |
+| HL-08 | Unsupported methods (`POST`, `DELETE`) | `405 Method Not Allowed` | L | | |
+| HL-09 | Path `/health/` (trailing slash) | `307` redirect to `/health` or `404`. Record | L | | |
 
-### 1.2 Отказ БД
+### 1.2 Database failure
 
-> Остановить БД: `docker-compose stop db`. После раздела вернуть: `docker-compose start db`.
+> Stop the database: `docker compose stop db`. Restore after the section: `docker compose start db`.
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| HL-10 | `GET /health` при остановленной БД | `"database": "error"`; ответ приходит без зависания | H | | |
-| HL-11 | HTTP-код при недоступной БД | ❓ `503 Service Unavailable`: балансировщик и мониторинг ориентируются на код, а не на тело. Если приходит `200`, мониторинг не увидит проблему — зафиксировать | H | | |
-| HL-12 | Поле `status` при недоступной БД | ❓ `"status"` отражает общую неработоспособность (`"error"` / `"degraded"`), а не `"ok"` | M | | |
-| HL-13 | Время ответа при недоступной БД | ❓ Ответ за разумный таймаут (< 5 с), а не после долгого ожидания соединения | M | | |
-| HL-14 | Текст ошибки БД не попадает в ответ | В ответе только `"error"`, без текста исключения | M | | |
-| HL-15 | Другие эндпоинты при недоступной БД (`POST /users/login`) | ❓ `503` / `500` с общим сообщением, без stack trace и данных подключения | M | | |
-| HL-16 | Восстановление | `docker-compose start db` → `GET /health` → `"database": "ok"` без перезапуска API | H | | |
+| HL-10 | `GET /health` with the DB stopped | `"database": "error"`; the response arrives without hanging | H | | |
+| HL-11 | HTTP code with the DB unavailable | ❓ `503 Service Unavailable`: load balancers and monitoring rely on the code, not the body. If `200` is returned, monitoring will not see the problem — record | H | | |
+| HL-12 | `status` field with the DB unavailable | ❓ `"status"` reflects the overall failure (`"error"` / `"degraded"`), not `"ok"` | M | | |
+| HL-13 | Response time with the DB unavailable | ❓ Response within a reasonable timeout (< 5 s), not after a long connection wait | M | | |
+| HL-14 | DB error text is not in the response | The response contains only `"error"`, no exception text | M | | |
+| HL-15 | Other endpoints with the DB unavailable (`POST /users/login`) | ❓ `503` / `500` with a generic message, no stack trace or connection details | M | | |
+| HL-16 | Recovery | `docker compose start db` → `GET /health` → `"database": "ok"` without restarting the API | H | | |
 
-### 1.3 Запуск приложения и окружения
+### 1.3 Application startup
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| HL-17 | Миграции при старте | В логах API `Migrations completed successfully`; `SELECT version_num FROM alembic_version;` = последней ревизии (`alembic heads`) | M | | |
-| HL-18 | Старт API при недоступной БД | ❓ Остановить `db` → `docker-compose restart api`. Зафиксировать: падает ли приложение с понятной ошибкой, стартует ли без миграций | L | | |
-| HL-19 | Холодный старт: `docker-compose down -v && docker-compose up` | Чистая БД создаётся, миграции применяются, `GET /health` → `"database": "ok"` | M | | |
-| HL-20 | Схема БД соответствует моделям | ❓ `\d users`, `\d items`, `\d refresh_tokens`, `\d logs` совпадают с `app/models.py`; `alembic check` не находит расхождений | L | | |
+| HL-17 | Migrations on startup | API logs contain `Migrations completed successfully`; `SELECT version_num FROM alembic_version;` = the latest revision (`alembic heads`) | M | | |
+| HL-18 | API startup with the DB unavailable | ❓ Stop `db` → `docker compose restart api`. Record: does the app fail with a clear error, does it start without migrations | L | | |
+| HL-19 | Cold start: `docker compose down -v && docker compose up` | A clean DB is created, migrations are applied, `GET /health` → `"database": "ok"` | M | | |
+| HL-20 | DB schema matches the models | ❓ `\d users`, `\d items`, `\d refresh_tokens`, `\d logs` match `app/models.py`; `alembic check` finds no differences | L | | |
 
 ---
 
-## 2. Логирование (F-13)
+## 2. Logging (F-13)
 
-> Логирование двойное: в консоль контейнера (JSON) и в таблицу `logs`. Запрос для проверки: `SELECT id, level, message, user_id, path, method, status_code, duration_ms, ip, created_at FROM logs ORDER BY id DESC LIMIT 10;`
+> Logging is dual: to the container console (JSON) and to the `logs` table. Query for checks: `SELECT id, level, message, user_id, path, method, status_code, duration_ms, ip, created_at FROM logs ORDER BY id DESC LIMIT 10;`
 
-### 2.1 Покрытие событий (таблица `logs`)
+### 2.1 Event coverage (`logs` table)
 
-> Выполнить действие → проверить последнюю запись в `logs`. Ожидаемые значения получены из README и исходного кода.
+> Perform the action → check the latest record in `logs`. Expected values are taken from the README and the source code.
 
-| ID | Событие | Ожидаемая запись в `logs` | Приор. | Статус | Комментарий / Баг |
+| ID | Event | Expected record in `logs` | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| LG-01 | Успешная регистрация | `INFO`, `path = /users/register`, `user_id` нового пользователя | M | | |
-| LG-02 | Регистрация с существующим email | `WARNING`, `path = /users/register` | M | | |
-| LG-03 | Успешный логин | `INFO`, `path = /users/login`, `user_id` | H | | |
-| LG-04 | Логин с неверным паролем | `WARNING`, `user_id` пользователя (важно для расследования атак) | H | | |
-| LG-05 | Логин с несуществующим email | `WARNING`, `user_id = NULL` | M | | |
-| LG-06 | Успешный refresh | `INFO`, `path = /users/refresh`, `user_id` | M | | |
-| LG-07 | Refresh с невалидным токеном | `WARNING`, `path = /users/refresh` | M | | |
-| LG-08 | Logout | `INFO`, `path = /users/logout`; ❓ `user_id` заполнен | L | | |
+| LG-01 | Successful registration | `INFO`, `path = /users/register`, `user_id` of the new user | M | | |
+| LG-02 | Registration with an existing email | `WARNING`, `path = /users/register` | M | | |
+| LG-03 | Successful login | `INFO`, `path = /users/login`, `user_id` | H | | |
+| LG-04 | Login with a wrong password | `WARNING`, `user_id` of the user (important for attack investigation) | H | | |
+| LG-05 | Login with a non-existent email | `WARNING`, `user_id = NULL` | M | | |
+| LG-06 | Successful refresh | `INFO`, `path = /users/refresh`, `user_id` | M | | |
+| LG-07 | Refresh with an invalid token | `WARNING`, `path = /users/refresh` | M | | |
+| LG-08 | Logout | `INFO`, `path = /users/logout`; ❓ `user_id` set | L | | |
 | LG-09 | Logout-all | `INFO`, `path = /users/logout-all`, `user_id` | L | | |
-| LG-10 | Создание item | `INFO`, `item_created`, `method = POST`, `status_code = 201`, `user_id` | M | | |
-| LG-11 | Обновление item | `INFO`, `item_updated`, `method = PUT`, `status_code = 200`, `path = /items/{id}` | M | | |
-| LG-12 | Удаление item | `INFO`, `item_deleted`, `method = DELETE`, `status_code = 204` | M | | |
-| LG-13 | Update / Delete несуществующего item | `WARNING`, `item_not_found`, `status_code = 404` | L | | |
-| LG-14 | Update / Delete чужого item | `WARNING`, `item_update_forbidden` / `item_delete_forbidden`, `status_code = 403`, `user_id` нарушителя | H | | |
-| LG-15 | Запрос с невалидным access token (`401`) | ❓ Зафиксировать: логируется ли (попытки доступа с поддельным токеном важны для безопасности) | M | | |
-| LG-16 | Ошибка валидации (`422`) | ❓ Зафиксировать: логируется ли | L | | |
-| LG-17 | Превышение rate limit (`429`) | ❓ Зафиксировать: логируется ли (см. RL-39) | L | | |
-| LG-18 | `GET /items/`, `GET /items/all`, `GET /health` | ❓ Зафиксировать: логируются ли операции чтения. Отсутствие — нормально, если так задумано | L | | |
-| LG-19 | Ошибка сервера (`500`, например при недоступной БД) | ❓ Запись уровня `ERROR` в консоли (в БД записать невозможно) | M | | |
+| LG-10 | Item created | `INFO`, `item_created`, `method = POST`, `status_code = 201`, `user_id` | M | | |
+| LG-11 | Item updated | `INFO`, `item_updated`, `method = PUT`, `status_code = 200`, `path = /items/{id}` | M | | |
+| LG-12 | Item deleted | `INFO`, `item_deleted`, `method = DELETE`, `status_code = 204` | M | | |
+| LG-13 | Update / Delete of a non-existent item | `WARNING`, `item_not_found`, `status_code = 404` | L | | |
+| LG-14 | Update / Delete of someone else's item | `WARNING`, `item_update_forbidden` / `item_delete_forbidden`, `status_code = 403`, `user_id` of the offender | H | | |
+| LG-15 | Request with an invalid access token (`401`) | ❓ Record whether it is logged (access attempts with forged tokens matter for security) | M | | |
+| LG-16 | Validation error (`422`) | ❓ Record whether it is logged | L | | |
+| LG-17 | Rate limit exceeded (`429`) | ❓ Record whether it is logged (see RL-39) | L | | |
+| LG-18 | `GET /items/`, `GET /items/all`, `GET /health` | ❓ Record whether read operations are logged. Absence is fine if intended | L | | |
+| LG-19 | Server error (`500`, e.g. with the DB unavailable) | ❓ An `ERROR` record in the console (it cannot be written to the DB) | M | | |
 
-### 2.2 Качество и полнота полей
+### 2.2 Field quality and completeness
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| LG-20 | Поле `ip` | ❓ Заполнено IP клиента для всех записей. Без IP невозможно расследовать атаки. Зафиксировать долю заполненных записей | M | | R-12 |
-| LG-21 | Поле `duration_ms` | ❓ Заполнено временем обработки запроса. Зафиксировать долю заполненных записей | L | | R-12 |
-| LG-22 | Поля `method` и `status_code` | ❓ Заполнены единообразно для всех событий (и users, и items). Сравнить LG-01…LG-09 с LG-10…LG-14 | M | | R-12 |
-| LG-23 | Поле `status_code` соответствует фактическому коду ответа | Для каждой записи `status_code` = коду, который получил клиент | M | | |
-| LG-24 | Единый формат `message` | ❓ Для users — свободный текст с email, для items — коды событий (`item_created`). Зафиксировать несогласованность | L | | |
-| LG-25 | `level` — только допустимые значения | `INFO`, `WARNING`, `ERROR` в верхнем регистре | L | | |
-| LG-26 | `created_at` | Заполнено, в UTC, ≈ времени запроса; записи упорядочены по времени | L | | |
-| LG-27 | Одно действие — одна запись | Нет дублирования записей для одного запроса | L | | |
+| LG-20 | `ip` field | ❓ Filled with the client IP for all records. Without the IP attacks cannot be investigated. Record the share of filled records | M | | R-12 |
+| LG-21 | `duration_ms` field | ❓ Filled with the request processing time. Record the share of filled records | L | | R-12 |
+| LG-22 | `method` and `status_code` fields | ❓ Filled consistently for all events (both users and items). Compare LG-01…LG-09 with LG-10…LG-14 | M | | R-12 |
+| LG-23 | `status_code` matches the actual response code | For each record `status_code` = the code the client received | M | | |
+| LG-24 | Consistent `message` format | ❓ Users use free text with email, items use event codes (`item_created`). Record the inconsistency | L | | |
+| LG-25 | `level` — only allowed values | `INFO`, `WARNING`, `ERROR` in upper case | L | | |
+| LG-26 | `created_at` | Set, in UTC, ≈ request time; records are ordered by time | L | | |
+| LG-27 | One action — one record | No duplicate records for one request | L | | |
 
-### 2.3 Безопасность логов
+### 2.3 Log security
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| LG-28 | Пароли не попадают в логи | После регистрации и логинов (успешных и неудачных): `SELECT * FROM logs WHERE message ILIKE '%<пароль>%';` → 0 строк; в консоли тоже нет | H | | |
-| LG-29 | Токены не попадают в логи | Ни access, ни refresh-токены, ни их хеши не встречаются в `logs` и в консоли | H | | |
-| LG-30 | Email (PII) в логах | ❓ Email хранится в `message` в открытом виде. Зафиксировать как замечание (GDPR, маскирование `u***@test.com`) | M | | R-12 |
-| LG-31 | Email несуществующих пользователей в логах | ❓ При неудачном логине в логи пишется произвольный введённый email — то есть любой ввод. Проверить с email вида `"<script>@x.com"` и длинным email: не ломается ли запись | L | | |
-| LG-32 | Инъекция в логи | Регистрация / логин с email, содержащим `\n` или JSON-фрагмент (если пройдёт валидацию): консольный лог остаётся валидным JSON в одну строку, поддельная запись не создаётся | L | | |
-| LG-33 | Хранение и ротация | ❓ Таблица `logs` растёт без ограничений. Уточнить политику хранения (retention) | L | | |
+| LG-28 | Passwords do not get into logs | After registrations and logins (successful and failed): `SELECT * FROM logs WHERE message ILIKE '%<password>%';` → 0 rows; none in the console either | H | | |
+| LG-29 | Tokens do not get into logs | Neither access nor refresh tokens nor their hashes appear in `logs` or in the console | H | | |
+| LG-30 | Email (PII) in logs | ❓ Emails are stored in `message` in plain text. Record as a remark (GDPR, masking `u***@test.com`) | M | | R-12 |
+| LG-31 | Emails of non-existent users in logs | ❓ On a failed login any email typed by anyone is logged. Check with an email like `"<script>@x.com"` and a long email: the record is not broken | L | | |
+| LG-32 | Log injection | Registration / login with an email containing `\n` or a JSON fragment (if it passes validation): the console log stays valid single-line JSON, no fake record is created | L | | |
+| LG-33 | Retention and rotation | ❓ The `logs` table grows without limit. Clarify the retention policy | L | | |
 
-### 2.4 Консольный JSON-лог
+### 2.4 Console JSON log
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| LG-34 | Формат строки | Каждая строка лога приложения — валидный JSON (проверить: `docker-compose logs --no-log-prefix api \| grep '"level"' \| python -m json.tool --json-lines`) | M | | |
-| LG-35 | Обязательные поля | `time` (ISO 8601, UTC), `level`, `message` | M | | |
-| LG-36 | Дополнительные поля | Поля `user_id`, `path`, `method`, `status_code` присутствуют, если были переданы; пустые не выводятся | L | | |
-| LG-37 | Соответствие консоли и БД | Для одного события `level`, `message`, `user_id` в консоли и в `logs` совпадают | L | | |
-| LG-38 | Логи uvicorn (access log) | ❓ Строки uvicorn не в JSON — зафиксировать неоднородность формата в одном потоке | L | | |
+| LG-34 | Line format | Each application log line is valid JSON (check: `docker compose logs --no-log-prefix api \| grep '"level"' \| python -m json.tool --json-lines`) | M | | |
+| LG-35 | Mandatory fields | `time` (ISO 8601, UTC), `level`, `message` | M | | |
+| LG-36 | Additional fields | `user_id`, `path`, `method`, `status_code` are present when passed; empty ones are omitted | L | | |
+| LG-37 | Console and DB consistency | For one event `level`, `message`, `user_id` match in the console and in `logs` | L | | |
+| LG-38 | uvicorn logs (access log) | ❓ uvicorn lines are not JSON — record the mixed formats in one stream | L | | |
 
 ---
 
 ## 3. CORS (F-14)
 
-> Конфигурация: `allow_origins = ["http://localhost:3000"]`, `allow_credentials = True`, `allow_methods = GET, POST, PUT, DELETE`, `allow_headers = *`.
+> Configuration: `allow_origins = ["http://localhost:3000"]`, `allow_credentials = True`, `allow_methods = GET, POST, PUT, DELETE`, `allow_headers = *`.
 >
-> CORS-заголовки проверяются через Postman или curl, добавляя заголовок `Origin`. Пример preflight-запроса:
+> CORS headers are checked with Postman or curl by adding an `Origin` header. Example preflight request:
 > ```bash
 > curl -i -X OPTIONS http://localhost:8000/items/ \
 >   -H "Origin: http://localhost:3000" \
 >   -H "Access-Control-Request-Method: POST" \
 >   -H "Access-Control-Request-Headers: Authorization, Content-Type"
 > ```
-> Для проверки в настоящем браузере (CR-20): `python3 -m http.server 3000` в пустой папке → открыть `http://localhost:3000` → в DevTools Console выполнить `fetch("http://localhost:8000/health").then(r => r.json()).then(console.log)`.
+> For a check in a real browser (CR-20): `python3 -m http.server 3000` in an empty folder → open `http://localhost:3000` → run in the DevTools console: `fetch("http://localhost:8000/health").then(r => r.json()).then(console.log)`.
 
-### 3.1 Разрешённый origin
+### 3.1 Allowed origin
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| CR-01 | Preflight `OPTIONS /items/` с `Origin: http://localhost:3000`, метод `POST` | `200`; `Access-Control-Allow-Origin: http://localhost:3000`; `Access-Control-Allow-Credentials: true`; `Access-Control-Allow-Methods` содержит `POST` | H | | |
-| CR-02 | Preflight с `Access-Control-Request-Headers: Authorization, Content-Type` | `Access-Control-Allow-Headers` содержит оба заголовка | H | | |
-| CR-03 | Preflight для `PUT` и `DELETE` (`/items/1`) | `200`, методы разрешены | M | | |
-| CR-04 | Обычный `GET /health` с разрешённым `Origin` | `Access-Control-Allow-Origin: http://localhost:3000`, `Access-Control-Allow-Credentials: true` | H | | |
-| CR-05 | `POST /users/login` с разрешённым `Origin` | CORS-заголовки + `Set-Cookie` в ответе | H | | |
-| CR-06 | `Allow-Origin` при `allow_credentials = true` | Никогда не `*`, а конкретный origin | H | | |
-| CR-07 | Заголовок `Vary: Origin` | Присутствует (корректная работа кешей) | L | | |
-| CR-08 | `Access-Control-Max-Age` | ❓ Присутствует (по умолчанию `600`). Зафиксировать значение | L | | |
+| CR-01 | Preflight `OPTIONS /items/` with `Origin: http://localhost:3000`, method `POST` | `200`; `Access-Control-Allow-Origin: http://localhost:3000`; `Access-Control-Allow-Credentials: true`; `Access-Control-Allow-Methods` contains `POST` | H | | |
+| CR-02 | Preflight with `Access-Control-Request-Headers: Authorization, Content-Type` | `Access-Control-Allow-Headers` contains both headers | H | | |
+| CR-03 | Preflight for `PUT` and `DELETE` (`/items/1`) | `200`, methods allowed | M | | |
+| CR-04 | Regular `GET /health` with the allowed `Origin` | `Access-Control-Allow-Origin: http://localhost:3000`, `Access-Control-Allow-Credentials: true` | H | | |
+| CR-05 | `POST /users/login` with the allowed `Origin` | CORS headers + `Set-Cookie` in the response | H | | |
+| CR-06 | `Allow-Origin` with `allow_credentials = true` | Never `*`, always the specific origin | H | | |
+| CR-07 | `Vary: Origin` header | Present (correct caching) | L | | |
+| CR-08 | `Access-Control-Max-Age` | ❓ Present (default `600`). Record the value | L | | |
 
-### 3.2 Запрещённые origin и методы
+### 3.2 Disallowed origins and methods
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| CR-09 | Preflight с `Origin: http://evil.com` | `400` (`Disallowed CORS origin`), без `Access-Control-Allow-Origin` | H | | |
-| CR-10 | Обычный `GET /health` с `Origin: http://evil.com` | Ответ `200` приходит, но **без** `Access-Control-Allow-Origin` (браузер заблокирует чтение) | H | | |
-| CR-11 | Похожие origin: `https://localhost:3000`, `http://localhost:3001`, `http://127.0.0.1:3000`, `http://localhost:3000.evil.com`, `http://evil.com/http://localhost:3000` | Ни один не разрешён | H | | |
-| CR-12 | `Origin: null` | Не разрешён | M | | |
-| CR-13 | `Origin: http://LOCALHOST:3000` (регистр) | ❓ Зафиксировать поведение | L | | |
-| CR-14 | Preflight с методом `PATCH` | `400`, `PATCH` не в `Allow-Methods` | M | | |
-| CR-15 | Preflight с произвольным заголовком `X-Custom: 1` | Разрешён (`allow_headers = *`). ❓ Зафиксировать как избыточно широкую настройку | L | | |
+| CR-09 | Preflight with `Origin: http://evil.com` | `400` (`Disallowed CORS origin`), no `Access-Control-Allow-Origin` | H | | |
+| CR-10 | Regular `GET /health` with `Origin: http://evil.com` | `200` is returned, but **without** `Access-Control-Allow-Origin` (the browser blocks reading it) | H | | |
+| CR-11 | Look-alike origins: `https://localhost:3000`, `http://localhost:3001`, `http://127.0.0.1:3000`, `http://localhost:3000.evil.com`, `http://evil.com/http://localhost:3000` | None is allowed | H | | |
+| CR-12 | `Origin: null` | Not allowed | M | | |
+| CR-13 | `Origin: http://LOCALHOST:3000` (case) | ❓ Record the behaviour | L | | |
+| CR-14 | Preflight with method `PATCH` | `400`, `PATCH` not in `Allow-Methods` | M | | |
+| CR-15 | Preflight with an arbitrary header `X-Custom: 1` | Allowed (`allow_headers = *`). ❓ Record as an overly broad setting | L | | |
 
-### 3.3 CORS вместе с ошибками и прочим
+### 3.3 CORS with errors and other cases
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| CR-16 | Ответ `401` с разрешённым `Origin` | CORS-заголовки присутствуют (иначе фронтенд не сможет прочитать ошибку) | M | | |
-| CR-17 | Ответ `429` с разрешённым `Origin` | CORS-заголовки присутствуют | M | | |
-| CR-18 | Ответ `500` (БД остановлена) с разрешённым `Origin` | ❓ Зафиксировать: есть ли CORS-заголовки. Без них браузер покажет ошибку CORS вместо ошибки сервера | L | | |
-| CR-19 | Учитываются ли preflight-запросы в rate limit | ❓ 110 × `OPTIONS /health` → зафиксировать, приходит ли `429` | L | | |
-| CR-20 | Проверка в браузере | С `http://localhost:3000` fetch проходит; с `http://localhost:8080` (`python3 -m http.server 8080`) — ошибка CORS в консоли | M | | |
-| CR-21 | Запрос без `Origin` (curl, Postman) | Обрабатывается как обычно. Это ожидаемо: CORS защищает браузер, а не сервер | L | | |
-| CR-22 | Настройка origin (анализ кода) | ❓ Разрешён только `http://localhost:3000`, origin захардкожен в `main.py`, а не вынесен в `.env`. Для любого другого окружения нужен новый релиз — зафиксировать как замечание | M | | R-15 |
+| CR-16 | `401` response with the allowed `Origin` | CORS headers present (otherwise the frontend cannot read the error) | M | | |
+| CR-17 | `429` response with the allowed `Origin` | CORS headers present | M | | |
+| CR-18 | `500` response (DB stopped) with the allowed `Origin` | ❓ Record whether CORS headers are present. Without them the browser shows a CORS error instead of the server error | L | | |
+| CR-19 | Are preflight requests counted by the rate limit | ❓ 110 × `OPTIONS /health` → record whether `429` comes | L | | |
+| CR-20 | Browser check | From `http://localhost:3000` fetch succeeds; from `http://localhost:8080` (`python3 -m http.server 8080`) — CORS error in the console | M | | |
+| CR-21 | Request without `Origin` (curl, Postman) | Processed normally. This is expected: CORS protects the browser, not the server | L | | |
+| CR-22 | Origin configuration (code analysis) | ❓ Only `http://localhost:3000` is allowed, the origin is hardcoded in `main.py` instead of `.env`. Any other environment needs a new release — record as a remark | M | | R-15 |
 
 ---
 
-## 4. API-документация (F-15)
+## 4. API documentation (F-15)
 
-### 4.1 Доступность
+### 4.1 Availability
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| DOC-01 | `GET /docs` | Swagger UI загружается без ошибок в консоли браузера | M | | |
-| DOC-02 | `GET /redoc` | ReDoc загружается | L | | |
-| DOC-03 | `GET /openapi.json` | `200`, валидный JSON; спецификация проходит валидацию (например, editor.swagger.io → File → Import) | M | | |
+| DOC-01 | `GET /docs` | Swagger UI loads without errors in the browser console | M | | |
+| DOC-02 | `GET /redoc` | ReDoc loads | L | | |
+| DOC-03 | `GET /openapi.json` | `200`, valid JSON; the spec passes validation (e.g. editor.swagger.io → File → Import) | M | | |
 
-### 4.2 Содержание
+### 4.2 Content
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| DOC-04 | Все эндпоинты из README присутствуют | 11 эндпоинтов, сгруппированы по тегам `Users`, `Items`, `Health` | M | | |
-| DOC-05 | Версия | `info.version` = `1.7.0`; совпадает с README / Roadmap | L | | |
-| DOC-06 | Описания эндпоинтов | У каждого эндпоинта есть `summary` и описание. ❓ У items описаний нет — зафиксировать (Roadmap v1.7: «Swagger descriptions per endpoint» отмечено выполненным) | L | | |
-| DOC-07 | Задокументированные коды ответов | Каждый код из описания воспроизводим (сверка с CL-01 SEC-10, CL-02 CTR-03) | M | | R-06 |
-| DOC-08 | Схемы ответов | ❓ Для эндпоинтов указаны схемы ответов (`response_model`), а не пустой `{}` | M | | R-05 |
-| DOC-09 | Описание параметров пагинации | `page`, `limit`: тип, значения по умолчанию; ❓ ограничения min/max | L | | |
-| DOC-10 | Требования к полям в схемах | ❓ Ограничения (например, пароль min 6) отражены в схеме (`minLength`), а не только в тексте описания | L | | R-01 |
-| DOC-11 | Схема безопасности | `HTTPBearer` описан; защищённые эндпоинты помечены замком | M | | |
-| DOC-12 | Кнопка **Authorize** | После ввода токена запросы к items из Swagger UI выполняются с `200` | M | | |
-| DOC-13 | Refresh / Logout из Swagger UI | ❓ Cookie-авторизация в Swagger не описана — зафиксировать, можно ли проверить эти эндпоинты через UI | L | | |
-| DOC-14 | Контакты и лицензия | `contact` и `license` заполнены, ссылка на репозиторий рабочая | L | | |
+| DOC-04 | All endpoints from the README are present | 11 endpoints grouped by tags `Users`, `Items`, `Health` | M | | |
+| DOC-05 | Version | `info.version` = `1.7.0`; matches README / Roadmap | L | | |
+| DOC-06 | Endpoint descriptions | Every endpoint has a `summary` and a description. ❓ Items endpoints have none — record (Roadmap v1.7: "Swagger descriptions per endpoint" is marked done) | L | | |
+| DOC-07 | Documented response codes | Every code in the description is reproducible (cross-check with CL-01 SEC-10, CL-02 CTR-03) | M | | R-06 |
+| DOC-08 | Response schemas | ❓ Endpoints declare response schemas (`response_model`), not an empty `{}` | M | | R-05 |
+| DOC-09 | Pagination parameter description | `page`, `limit`: type, defaults; ❓ min/max constraints | L | | |
+| DOC-10 | Field constraints in schemas | ❓ Constraints (e.g. password min 6) are reflected in the schema (`minLength`), not only in the description text | L | | R-01 |
+| DOC-11 | Security scheme | `HTTPBearer` is described; protected endpoints show a lock | M | | |
+| DOC-12 | **Authorize** button | After entering a token, items requests from Swagger UI return `200` | M | | |
+| DOC-13 | Refresh / Logout from Swagger UI | ❓ Cookie auth is not described in Swagger — record whether these endpoints can be tested via the UI | L | | |
+| DOC-14 | Contact and license | `contact` and `license` are set, the repository link works | L | | |
 
-### 4.3 Соответствие README
+### 4.3 Consistency with the README
 
-| ID | Проверка | Ожидаемый результат | Приор. | Статус | Комментарий / Баг |
+| ID | Check | Expected result | Prio | Status | Comment / Bug |
 |---|---|---|---|---|---|
-| DOC-15 | Таблица эндпоинтов в README | Методы, пути и признак авторизации совпадают с `/openapi.json` и фактическим поведением | L | | |
-| DOC-16 | Переменные окружения в README | Список и значения по умолчанию совпадают с `app/config.py` и `.env.example` | L | | |
+| DOC-15 | Endpoint table in the README | Methods, paths and auth flag match `/openapi.json` and actual behaviour | L | | |
+| DOC-16 | Environment variables in the README | The list and defaults match `app/config.py` and `.env.example` | L | | |
 
 ---
 
-## Итоги прогона
+## Run summary
 
-| Раздел | Всего | ✅ | ❌ | ⚠️ | ⏭ |
+| Section | Total | ✅ | ❌ | ⚠️ | ⏭ |
 |---|---|---|---|---|---|
 | 1. Health check | 20 | | | | |
-| 2. Логирование | 38 | | | | |
+| 2. Logging | 38 | | | | |
 | 3. CORS | 22 | | | | |
-| 4. API-документация | 16 | | | | |
-| **Итого** | **96** | | | | |
+| 4. API documentation | 16 | | | | |
+| **Total** | **96** | | | | |
 
-**Найденные дефекты:**
+**Defects found:**
 
-| Bug ID | Проверка | Заголовок | Severity |
+| Jira / GitHub | Check | Title | Severity |
 |---|---|---|---|
 | | | | |
 
-**Вопросы к разработчику (по пунктам ❓):**
+**Questions to the developer (❓ checks):**
 
-| # | Проверка | Вопрос | Ответ |
+| Jira / GitHub | Check | Question | Answer |
 |---|---|---|---|
 | | | | |

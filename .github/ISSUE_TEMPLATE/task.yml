@@ -1,18 +1,18 @@
 name: Task / Question
-description: Зеркало Jira-задачи — прогон чек-листа, регресс, отчёт или вопрос к разработчику
-title: "[FAT-N] <Краткое описание>"
+description: Mirror of a Jira task — checklist run, regression, report or a question to the developer
+title: "[FAT-N] <Short description>"
 labels: ["task"]
 body:
   - type: markdown
     attributes:
       value: |
-        Зеркало задачи из Jira. Для вопроса к разработчику замените метку `task` на `question`.
+        Mirror of a Jira task. For a question to the developer, replace the `task` label with `question`.
 
   - type: input
     id: jira
     attributes:
       label: Jira
-      description: Ключ и ссылка на задачу в Jira
+      description: Jira key and link
       placeholder: "FAT-1 — https://romanshevchenko316.atlassian.net/browse/FAT-1"
     validations:
       required: true
@@ -20,18 +20,18 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Описание
+      label: Description
       placeholder: |
-        Прогон чек-листа CL-01 Auth (118 проверок) на Local (Docker), коммит 660708b.
+        Run checklist CL-01 Auth (118 checks) on Local (Docker), build 660708b.
     validations:
       required: true
 
   - type: textarea
     id: done
     attributes:
-      label: Критерий готовности
+      label: Definition of done
       placeholder: |
-        - все проверки имеют статус
-        - найденные дефекты заведены в Jira и зеркалированы сюда
+        - every check has a status
+        - defects are filed in Jira and mirrored here
     validations:
       required: false
