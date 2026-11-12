@@ -31,7 +31,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="FastAPI Project",
     description="A production-ready REST API with JWT authentication, refresh tokens, and rate limiting.",
-    version="1.7.0",
+    version="1.7.1",
     contact={
         "name": "nisanMan",
         "url": "https://github.com/nisanMan/fastapi-project",
