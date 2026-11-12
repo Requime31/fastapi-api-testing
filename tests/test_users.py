@@ -160,6 +160,24 @@ def test_logout(client, auth_data):
     assert response.json()["message"] == "Logged out"
 
 
+def test_logout_log_has_user_id(client, auth_data):
+    """FAT-19: the logout log record carries the user_id of the session owner."""
+    from app import models
+    from .conftest import TestingSessionLocal
+
+    client.cookies.set("refresh_token", auth_data["refresh_token"])
+    assert client.post("/users/logout").status_code == 200
+
+    db = TestingSessionLocal()
+    try:
+        user = db.query(models.User).filter(models.User.email == auth_data["email"]).one()
+        record = db.query(models.Log).filter(models.Log.path == "/users/logout").order_by(models.Log.id.desc()).first()
+        assert record is not None
+        assert record.user_id == user.id
+    finally:
+        db.close()
+
+
 def test_logout_invalidates_token(client, auth_data):
     client.cookies.set("refresh_token", auth_data["refresh_token"])
     client.post("/users/logout")

@@ -7,6 +7,7 @@ from ..repositories.user_repository import UserRepository
 from ..repositories.token_repository import (
     save_refresh_token,
     get_token_by_hash,
+    find_token_by_hash,
     revoke_token,
     revoke_all_user_tokens,
     delete_expired_tokens
@@ -96,10 +97,12 @@ class UserService:
     def logout(self, token: str, response: Response):
         """מבטל את הסשן הנוכחי בלבד"""
         token_hash = hash_token(token)
+        db_token = find_token_by_hash(self.db, token_hash)
+        user_id = db_token.user_id if db_token else None
         revoke_token(self.db, token_hash)
         response.delete_cookie("refresh_token")
 
-        log(self.db, "INFO", "User logged out", path="/users/logout")
+        log(self.db, "INFO", "User logged out", user_id=user_id, path="/users/logout")
         return {"message": "Logged out"}
 
     def logout_all(self, user_id: int, response: Response):

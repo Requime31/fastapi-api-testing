@@ -27,6 +27,11 @@ def get_token_by_hash(db: Session, token_hash: str) -> RefreshToken | None:
     ).first()
 
 
+def find_token_by_hash(db: Session, token_hash: str) -> RefreshToken | None:
+    """Finds a token by hash regardless of its state (revoked / expired)."""
+    return db.query(RefreshToken).filter(RefreshToken.token_hash == token_hash).first()
+
+
 def revoke_token(db: Session, token_hash: str) -> None:
     """מבטל טוקן ספציפי"""
     db.query(RefreshToken).filter(
