@@ -1,12 +1,19 @@
 # app/schemas.py
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator
 
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=6)
     phone: str = None
+
+    @field_validator("password")
+    @classmethod
+    def password_not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Password must not consist of whitespace only")
+        return value
 
 
 class UserLogin(BaseModel):
