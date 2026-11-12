@@ -91,7 +91,7 @@ def new_user(tag):
     e = email(tag)
     register(e)
     _, tok, rc = login(e)
-    return e, int(sql1(f"SELECT id FROM users WHERE email='{e}';")), tok, rc
+    return e, int(sql1(f"SELECT id FROM users WHERE lower(email) = lower('{e}');")), tok, rc
 
 
 def mask(s: str) -> str:

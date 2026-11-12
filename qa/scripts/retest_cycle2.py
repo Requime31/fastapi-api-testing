@@ -25,7 +25,8 @@ def fat8():
     """FAT-8: password validation on registration (REG-15, REG-16, REG-17)."""
     for n, (tag, pw) in enumerate([("short", "abc12"), ("empty", ""), ("spaces", "      ")], start=1):
         r = register(email(f"fat8_{tag}"), pw)
-        created = sql1(f"SELECT count(*) FROM users WHERE email='{email(f'fat8_{tag}')}';")
+        e = email(f"fat8_{tag}")
+        created = sql1(f"SELECT count(*) FROM users WHERE lower(email) = lower('{e}');")
         check(f"RT-8-{n}", r.status_code == 422 and loc_is_password(r) and created == "0",
               f"password {pw!r} → {short(r, 160)}; user created: {created != '0'}")
     # step 4 of the report: the empty-password account cannot be created, so login is impossible
@@ -61,6 +62,26 @@ def fat9():
     check("RT-9-5", True, f"legacy case-duplicates in the database: {len(dups)} address(es)",
           "created before the fix (cycle 1); not removed by the fix — see PR #52 'Known limitation'",
           status="pass")
+    # every legacy account must stay reachable: log in with each account's exact email
+    # and compare the user_id in the issued token with the account's own id
+    rows = sql("SELECT id, email FROM users WHERE lower(email) IN "
+               "(SELECT lower(email) FROM users GROUP BY 1 HAVING count(*) > 1) ORDER BY lower(email), id;")
+    unreachable = []
+    for uid, e in rows:
+        r, tok, _ = login(e)
+        got = jwt_user_id(tok) if tok else None
+        if got != int(uid):
+            unreachable.append(f"{uid} ({e.split('@')[0][-5:]}…) → token user_id {got}")
+    check("RT-9-6", not unreachable,
+          f"legacy duplicate accounts: {len(rows)}; unreachable by their own email: {len(unreachable)}"
+          + (f" — {'; '.join(unreachable)}" if unreachable else ""),
+          "login by the exact email of an account created before the fix must reach that account")
+
+
+def jwt_user_id(token):
+    import base64, json
+    payload = token.split(".")[1]
+    return json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))["user_id"]
 
 
 def fat13():
@@ -97,11 +118,11 @@ def fat15():
     """FAT-15: phone: null is accepted (REG-27)."""
     e = email("fat15_null")
     r = register(e, phone=None)
-    phone = sql1(f"SELECT coalesce(phone, '<NULL>') FROM users WHERE email='{e}';")
+    phone = sql1(f"SELECT coalesce(phone, '<NULL>') FROM users WHERE lower(email) = lower('{e}');")
     check("RT-15-1", r.status_code == 201 and phone == "<NULL>", f"phone: null → {short(r)}; phone in DB = {phone}")
     e = email("fat15_value")
     r = register(e, phone="+31612345678")
-    phone = sql1(f"SELECT phone FROM users WHERE email='{e}';")
+    phone = sql1(f"SELECT phone FROM users WHERE lower(email) = lower('{e}');")
     check("RT-15-2", r.status_code == 201 and phone == "+31612345678", f"phone value → {r.status_code}; DB = {phone}")
     r = register(email("fat15_number"), phone=12345)
     check("RT-15-3", r.status_code == 422, f"phone as a number → {short(r, 120)}", "type validation is kept")
@@ -112,7 +133,7 @@ def fat19():
     e = email("fat19")
     register(e)
     _, _, rc = login(e)
-    uid = sql1(f"SELECT id FROM users WHERE email='{e}';")
+    uid = sql1(f"SELECT id FROM users WHERE lower(email) = lower('{e}');")
     r = req("POST", "/users/logout", cookie=rc)
     row = sql("SELECT level, message, coalesce(user_id::text, 'NULL') FROM logs WHERE path='/users/logout' ORDER BY id DESC LIMIT 1;")
     check("RT-19-1", r.status_code == 200 and row and row[0][2] == uid,

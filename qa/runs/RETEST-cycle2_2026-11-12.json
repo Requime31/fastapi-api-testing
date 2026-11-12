@@ -1,0 +1,135 @@
+{
+  "checklist": "Cycle 2 re-test: FAT-8, FAT-9, FAT-13, FAT-15, FAT-19",
+  "run_id": "1112145639",
+  "date": "2026-11-12T13:56:45.097938+00:00",
+  "environment": "Local (Docker), qa/docker-compose.functional.yml",
+  "app_build": "v1.7.1",
+  "repo_commit": "5784850",
+  "results": {
+    "RT-8-1": {
+      "status": "pass",
+      "actual": "password 'abc12' → 422 {\"detail\": [{\"type\": \"string_too_short\", \"loc\": [\"body\", \"password\"], \"msg\": \"String should have at least 6 characters\", \"input\": \"abc12\", \"ctx\": {\"min_length\":; user created: False",
+      "note": ""
+    },
+    "RT-8-2": {
+      "status": "pass",
+      "actual": "password '' → 422 {\"detail\": [{\"type\": \"string_too_short\", \"loc\": [\"body\", \"password\"], \"msg\": \"String should have at least 6 characters\", \"input\": \"\", \"ctx\": {\"min_length\": 6}}]; user created: False",
+      "note": ""
+    },
+    "RT-8-3": {
+      "status": "pass",
+      "actual": "password '      ' → 422 {\"detail\": [{\"type\": \"value_error\", \"loc\": [\"body\", \"password\"], \"msg\": \"Value error, Password must not consist of whitespace only\", \"input\": \"      \", \"ctx\": {; user created: False",
+      "note": ""
+    },
+    "RT-8-4": {
+      "status": "pass",
+      "actual": "login with an empty password → 404",
+      "note": ""
+    },
+    "RT-8-5": {
+      "status": "pass",
+      "actual": "boundary: 6 characters 'abc123' → 201 {\"message\": \"User created\"}",
+      "note": ""
+    },
+    "RT-8-6": {
+      "status": "pass",
+      "actual": "6 characters with spaces inside the value ' abc1 ' → 201 {\"message\": \"User created\"}",
+      "note": "non-blank value of the minimum length is accepted"
+    },
+    "RT-8-7": {
+      "status": "pass",
+      "actual": "login with the boundary password → 200",
+      "note": ""
+    },
+    "RT-9-1": {
+      "status": "pass",
+      "actual": "register 'qa1112145639_fat9_case@test.com' → 201 {\"message\": \"User created\"}",
+      "note": ""
+    },
+    "RT-9-2": {
+      "status": "pass",
+      "actual": "login as 'QA1112145639_FAT9_CASE@TEST.COM' → 200 {\"access_token\": \"<jwt>",
+      "note": ""
+    },
+    "RT-9-3": {
+      "status": "pass",
+      "actual": "register 'QA1112145639_FAT9_CASE@TEST.COM' → 400 {\"detail\": \"User already exists\"}; accounts with this address: 1",
+      "note": ""
+    },
+    "RT-9-4": {
+      "status": "pass",
+      "actual": "register 'QA1112145639_fat9_Mixed@test.com' → 201; stored as 'qa1112145639_fat9_mixed@test.com'",
+      "note": ""
+    },
+    "RT-9-5": {
+      "status": "pass",
+      "actual": "legacy case-duplicates in the database: 3 address(es)",
+      "note": "created before the fix (cycle 1); not removed by the fix — see PR #52 'Known limitation'"
+    },
+    "RT-9-6": {
+      "status": "fail",
+      "actual": "legacy duplicate accounts: 6; unreachable by their own email: 3 — 13 (REG01…) → token user_id 4; 47 (REG01…) → token user_id 38; 82 (REG01…) → token user_id 73",
+      "note": "login by the exact email of an account created before the fix must reach that account"
+    },
+    "RT-13-1": {
+      "status": "pass",
+      "actual": "POST /users/logout-all without Authorization → 401 {\"detail\": \"Not authenticated\"}; WWW-Authenticate=Bearer",
+      "note": ""
+    },
+    "RT-13-2": {
+      "status": "pass",
+      "actual": "GET /items/ without Authorization → 401 {\"detail\": \"Not authenticated\"}; WWW-Authenticate=Bearer",
+      "note": ""
+    },
+    "RT-13-3": {
+      "status": "pass",
+      "actual": "Basic scheme → 401 {\"detail\": \"Not authenticated\"}",
+      "note": ""
+    },
+    "RT-13-4": {
+      "status": "pass",
+      "actual": "'Bearer' without a token → 401 {\"detail\": \"Not authenticated\"}",
+      "note": ""
+    },
+    "RT-13-5": {
+      "status": "pass",
+      "actual": "invalid token → 401 {\"detail\": \"Invalid or expired token\"}; WWW-Authenticate=Bearer",
+      "note": ""
+    },
+    "RT-13-6": {
+      "status": "pass",
+      "actual": "OpenAPI security schemes: ['HTTPBearer']; secured operations: 6",
+      "note": "the Authorize button in Swagger keeps working"
+    },
+    "RT-13-7": {
+      "status": "pass",
+      "actual": "someone else's item with a valid token → 403 {\"detail\": \"Not your item\"}",
+      "note": "authorisation (ownership) still answers 403"
+    },
+    "RT-15-1": {
+      "status": "pass",
+      "actual": "phone: null → 201 {\"message\": \"User created\"}; phone in DB = <NULL>",
+      "note": ""
+    },
+    "RT-15-2": {
+      "status": "pass",
+      "actual": "phone value → 201; DB = +31612345678",
+      "note": ""
+    },
+    "RT-15-3": {
+      "status": "pass",
+      "actual": "phone as a number → 422 {\"detail\": [{\"type\": \"string_type\", \"loc\": [\"body\", \"phone\"], \"msg\": \"Input should be a valid string\", \"input\": 12345}]}",
+      "note": "type validation is kept"
+    },
+    "RT-19-1": {
+      "status": "pass",
+      "actual": "logout → 200; last log record: INFO | User logged out | 152; user_id expected 152",
+      "note": ""
+    },
+    "RT-19-2": {
+      "status": "pass",
+      "actual": "logout with an unknown token → 200; user_id = NULL",
+      "note": "no owner to log; 200 for an unknown token is the separate open defect FAT-14"
+    }
+  }
+}

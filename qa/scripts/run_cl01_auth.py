@@ -116,7 +116,7 @@ def login(e, pw=PW):
 
 
 def user_id(e) -> int | None:
-    rows = sql(f"SELECT id FROM users WHERE email = '{e}';")
+    rows = sql(f"SELECT id FROM users WHERE lower(email) = lower('{e}');")
     return int(rows[0][0]) if rows else None
 
 
@@ -160,17 +160,17 @@ def s_register():
 
     e2 = email("reg02")
     r = register(e2, phone="+31612345678")
-    row = sql(f"SELECT phone FROM users WHERE email='{e2}';")
+    row = sql(f"SELECT phone FROM users WHERE lower(email) = lower('{e2}');")
     check("REG-02", r.status_code == 201 and row and row[0][0] == "+31612345678",
           f"{r.status_code}; phone in DB = {row[0][0] if row else None}")
 
-    row = sql(f"SELECT phone IS NULL FROM users WHERE email='{e}';")
+    row = sql(f"SELECT phone IS NULL FROM users WHERE lower(email) = lower('{e}');")
     check("REG-03", row and row[0][0] == "t", f"201; phone IS NULL = {row[0][0] if row else None}")
 
-    row = sql(f"SELECT password FROM users WHERE email='{e}';")[0][0]
+    row = sql(f"SELECT password FROM users WHERE lower(email) = lower('{e}');")[0][0]
     check("REG-04", row != PW and row.startswith("$2b$"), f"hash prefix = {row[:7]}…, len {len(row)}")
 
-    row = sql(f"SELECT id, is_active FROM users WHERE email='{e}';")[0]
+    row = sql(f"SELECT id, is_active FROM users WHERE lower(email) = lower('{e}');")[0]
     check("REG-05", row[0].isdigit() and row[1] == "t", f"id={row[0]}, is_active={row[1]}")
 
     r = register(email("reg06"))
@@ -207,9 +207,9 @@ def s_register():
     lg = last_log("/users/register", uid)
     check("REG-11", lg is not None and lg[0] == "INFO", f"logs: {lg}")
 
-    before = sql(f"SELECT count(*) FROM users WHERE email='{e}';")[0][0]
+    before = sql(f"SELECT count(*) FROM users WHERE lower(email) = lower('{e}');")[0][0]
     r = register(e)
-    after = sql(f"SELECT count(*) FROM users WHERE email='{e}';")[0][0]
+    after = sql(f"SELECT count(*) FROM users WHERE lower(email) = lower('{e}');")[0][0]
     check("REG-12", r.status_code == 400 and body(r) == {"detail": "User already exists"} and before == after == "1",
           f"{short(r)}; records with this email: {after}")
 
@@ -275,7 +275,7 @@ def s_register():
 
     e28 = email("reg28")
     r = register(e28, is_active=False, id=999999)
-    row = sql(f"SELECT id, is_active FROM users WHERE email='{e28}';")
+    row = sql(f"SELECT id, is_active FROM users WHERE lower(email) = lower('{e28}');")
     check("REG-28", r.status_code == 201 and row and row[0][0] != "999999" and row[0][1] == "t",
           f"{r.status_code}; id={row[0][0] if row else None}, is_active={row[0][1] if row else None}")
 
@@ -395,7 +395,7 @@ def s_login():
 
     e23 = email("inactive")
     register(e23)
-    sql(f"UPDATE users SET is_active = false WHERE email='{e23}';")
+    sql(f"UPDATE users SET is_active = false WHERE lower(email) = lower('{e23}');")
     r = req("POST", "/users/login", json_body={"email": e23, "password": PW})
     check("LOG-23", r.status_code in (401, 403), short(r),
           "" if r.status_code in (401, 403) else "a deactivated user (is_active=false) logs in successfully")
@@ -528,7 +528,7 @@ def s_refresh():
     register(e19)
     _, _, c19 = login(e19)
     try:
-        sql(f"DELETE FROM users WHERE email='{e19}';")
+        sql(f"DELETE FROM users WHERE lower(email) = lower('{e19}');")
         r = req("POST", "/users/refresh", cookie=c19)
         check("REF-19", r.status_code in (401, 404), short(r))
     except RuntimeError as ex:
@@ -695,7 +695,7 @@ def s_security():
     e4 = email("sec04")
     register(e4)
     _, t4, _ = login(e4)
-    sql(f"UPDATE users SET is_active=false WHERE email='{e4}';")
+    sql(f"UPDATE users SET is_active=false WHERE lower(email) = lower('{e4}');")
     r = req("GET", "/items/", headers=bearer(t4))
     check("SEC-04", r.status_code in (401, 403), short(r),
           "" if r.status_code in (401, 403) else "the token of a deactivated user keeps working")

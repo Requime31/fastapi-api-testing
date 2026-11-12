@@ -96,7 +96,7 @@ def s_limits():
     reset()
     e = prepare_user("rl")
     S["e"] = e
-    S["uid"] = int(sql1(f"SELECT id FROM users WHERE email='{e}';"))
+    S["uid"] = int(sql1(f"SELECT id FROM users WHERE lower(email) = lower('{e}');"))
 
     reset()
     codes = series(lambda: login_raw(e, "WrongPass1"), 6)
@@ -105,7 +105,7 @@ def s_limits():
     reset()
     emails = [email(f"rl02_{i}") for i in range(4)]
     codes = [register(x).status_code for x in emails]
-    fourth = sql1(f"SELECT count(*) FROM users WHERE email='{emails[3]}';")
+    fourth = sql1(f"SELECT count(*) FROM users WHERE lower(email) = lower('{emails[3]}');")
     check("RL-02", codes[:3] == [201, 201, 201] and codes[3] == 429 and fourth == "0", f"codes: {codes}; 4th user in DB: {fourth}")
 
     reset()
@@ -444,7 +444,7 @@ def main():
     only = sys.argv[1:]  # e.g. s_limits s_config — re-run selected sections and merge into today's results
     print("CL-03 Rate Limit run" + (f" (sections: {', '.join(only)})" if only else "") + "\n", flush=True)
     if only and "s_limits" not in only:
-        reset(); S["e"] = prepare_user("rl"); S["uid"] = int(sql1(f"SELECT id FROM users WHERE email='{S['e']}';"))
+        reset(); S["e"] = prepare_user("rl"); S["uid"] = int(sql1(f"SELECT id FROM users WHERE lower(email) = lower('{S['e']}');"))
     for fn in all_sections:
         if only and fn.__name__ not in only:
             continue

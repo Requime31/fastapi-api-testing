@@ -18,6 +18,8 @@ The project simulates the work of a QA Engineer on a real backend: from smoke te
 | Execution | All 4 checklists executed on build `660708b` — 381 checks: 300 ✅ / 79 ❌ / 2 ⏭ ([CL-01](docs/checklists/CL-01_Auth.md) 98/19/1 · [CL-02](docs/checklists/CL-02_Items.md) 97/19/1 · [CL-03](docs/checklists/CL-03_RateLimit.md) 38/12/0 · [CL-04](docs/checklists/CL-04_Health_Logs_CORS.md) 67/29/0; [raw results](qa/runs/)) | ✅ Cycle 1 executed |
 | Tracking | Jira `FAT` ([cycle epic FAT-1](../../issues/1)) → mirrored to [Issues](../../issues): [33 bugs](../../issues?q=label%3Abug) (11 Major · 20 Minor · 2 Trivial, no Blocker / Critical) and [10 questions](../../issues?q=label%3Aquestion) filed, every one linked from its checklist | ✅ Filed |
 | Reporting | [Test Summary Report — cycle 1](docs/reports/TSR_cycle1_v1.7.0.md): pass rate 79.2%, 11 Major open — v1.7.0 not ready for release | ✅ Cycle 1 closed |
+| Fix verification | Cycle 2 on build `v1.7.1`: 5 fixes in PRs [#51](../../pull/51)–[#56](../../pull/56) with unit tests (29 → 42); re-test 24 ✅ / 1 ❌ — 4 bugs closed, [FAT-9](../../issues/9) reopened; regression CL-01 83.8% → 90.6%, CL-02 unchanged, no new failures | ✅ Cycle 2 closed |
+| Reporting | [Test Summary Report — cycle 2](docs/reports/TSR_cycle2_v1.7.1.md): pass rate 81.3%, 10 Major open — v1.7.1 not ready for release | ✅ |
 
 ---
 
@@ -70,7 +72,7 @@ Jira is private, so every Jira issue is mirrored to this repository's [Issues](.
 | Stack | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL 15, Alembic, slowapi, Docker Compose |
 | Authentication | JWT access token (30 min) + refresh token in an httpOnly cookie (7 days) with rotation |
 | Endpoints | `/users/register`, `/users/login`, `/users/refresh`, `/users/logout`, `/users/logout-all`, `/items/` (CRUD), `/items/all` (pagination), `/health` |
-| Version under test | API v1.7.0, commit `660708b` |
+| Version under test | Cycle 1: API v1.7.0, commit `660708b` · Cycle 2: API v1.7.1, tag `v1.7.1` (`5784850`) |
 | Author's description | [docs/APP_README.md](docs/APP_README.md) |
 
 ---

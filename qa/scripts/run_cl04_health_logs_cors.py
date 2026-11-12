@@ -200,7 +200,7 @@ def s_logging():
     start_id = int(sql1("SELECT coalesce(max(id),0) FROM logs;"))
     e = email("lg")
     register(e)
-    uid = int(sql1(f"SELECT id FROM users WHERE email='{e}';"))
+    uid = int(sql1(f"SELECT id FROM users WHERE lower(email) = lower('{e}');"))
     lg = last_log(f"path='/users/register' AND user_id={uid}")
     check("LG-01", lg and lg[0] == "INFO", f"{lg[:3] if lg else None}")
     register(e)

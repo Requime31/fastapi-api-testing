@@ -271,7 +271,7 @@ All cycle issues are children of the cycle epic and belong to the sprint **Test 
 | Status Готово (Done) / Отклонено (Rejected) | Issue closed (completed / not planned) with a comment |
 | Other statuses | Issue open; transitions duplicated as comments |
 
-Numbers match: `FAT-N` in Jira ↔ `#N` on GitHub (issues are created in pairs, in order). The Jira issue has a web link to the mirror issue, the issue links back to Jira. Commits related to an issue contain its key: `docs: add bug report FAT-12`.
+Numbers match for `FAT-1…FAT-50` ↔ `#1…#50` (issues are created in pairs, in order). GitHub issues and pull requests share one counter, so from `#51` (the first fix PR) numbers no longer match and the mirror is identified by the `[FAT-N]` prefix in its title. Fix PRs reference bugs with `Related to #N`, not `Fixes #N`: the mirror is closed only after re-test. The Jira issue has a web link to the mirror issue, the issue links back to Jira. Commits related to an issue contain its key: `docs: add bug report FAT-12`.
 
 ### 7.5 Bug report template
 - **ID / Title** — Jira key; what, where, under which conditions;
@@ -297,7 +297,8 @@ Numbers match: `FAT-N` in Jira ↔ `#N` on GitHub (issues are created in pairs, 
 | Test cases for critical scenarios | Preparation | ⏳ |
 | Postman Collection (extended) + Environment | Execution | 🔄 In progress (TC-001…TC-010) |
 | Bug reports (Jira + GitHub mirror) | Execution | ✅ Cycle 1: 33 bugs, 10 questions |
-| Test Summary Report | Closure | ✅ [Cycle 1](reports/TSR_cycle1_v1.7.0.md) |
+| Test Summary Report | Closure | ✅ [Cycle 1](reports/TSR_cycle1_v1.7.0.md) · [Cycle 2](reports/TSR_cycle2_v1.7.1.md) |
+| Re-test and regression of fixes (v1.7.1) | Cycle 2 | ✅ [`retest_cycle2.py`](../qa/scripts/retest_cycle2.py), CL-01 + CL-02 re-run |
 
 ---
 
