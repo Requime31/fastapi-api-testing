@@ -293,11 +293,11 @@ Numbers match: `FAT-N` in Jira ↔ `#N` on GitHub (issues are created in pairs, 
 | Smoke report | Before start | ✅ Done |
 | Test Plan (this document) | Planning | ✅ Draft |
 | Module checklists: [CL-01 Auth](checklists/CL-01_Auth.md) (118), [CL-02 Items](checklists/CL-02_Items.md) (117), [CL-03 Rate limit](checklists/CL-03_RateLimit.md) (50), [CL-04 Health / Logs / CORS / Docs](checklists/CL-04_Health_Logs_CORS.md) (96) — 381 checks total | Preparation | ✅ Ready |
-| Checklist run scripts and raw results (`qa/`) | Execution | 🔄 CL-01 done |
+| Checklist run scripts and raw results (`qa/`) | Execution | ✅ All 4 checklists, cycle 1 |
 | Test cases for critical scenarios | Preparation | ⏳ |
 | Postman Collection (extended) + Environment | Execution | 🔄 In progress (TC-001…TC-010) |
-| Bug reports (Jira + GitHub mirror) | Execution | 🔄 CL-01: 12 bugs, 4 questions |
-| Test Summary Report | Closure | ⏳ |
+| Bug reports (Jira + GitHub mirror) | Execution | ✅ Cycle 1: 33 bugs, 10 questions |
+| Test Summary Report | Closure | ✅ [Cycle 1](reports/TSR_cycle1_v1.7.0.md) |
 
 ---
 

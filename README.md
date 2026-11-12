@@ -17,7 +17,7 @@ The project simulates the work of a QA Engineer on a real backend: from smoke te
 | Test design | [Checklists](docs/checklists/) — 381 checks | ✅ Ready |
 | Execution | All 4 checklists executed on build `660708b` — 381 checks: 300 ✅ / 79 ❌ / 2 ⏭ ([CL-01](docs/checklists/CL-01_Auth.md) 98/19/1 · [CL-02](docs/checklists/CL-02_Items.md) 97/19/1 · [CL-03](docs/checklists/CL-03_RateLimit.md) 38/12/0 · [CL-04](docs/checklists/CL-04_Health_Logs_CORS.md) 67/29/0; [raw results](qa/runs/)) | ✅ Cycle 1 executed |
 | Tracking | Jira `FAT` ([cycle epic FAT-1](../../issues/1)) → mirrored to [Issues](../../issues): [33 bugs](../../issues?q=label%3Abug) (11 Major · 20 Minor · 2 Trivial, no Blocker / Critical) and [10 questions](../../issues?q=label%3Aquestion) filed, every one linked from its checklist | ✅ Filed |
-| Reporting | Test Summary Report | ⏳ |
+| Reporting | [Test Summary Report — cycle 1](docs/reports/TSR_cycle1_v1.7.0.md): pass rate 79.2%, 11 Major open — v1.7.0 not ready for release | ✅ Cycle 1 closed |
 
 ---
 
@@ -127,6 +127,7 @@ Jira · Postman · Swagger UI · psql · Docker Compose · curl · httpx · jwt.
 ├── docs/
 │   ├── TEST_PLAN.md          # test plan
 │   ├── checklists/           # checklists CL-01…CL-04 with run results
+│   ├── reports/              # test summary reports per cycle
 │   └── APP_README.md         # author's description of the application
 ├── qa/
 │   ├── scripts/              # checklist execution scripts
