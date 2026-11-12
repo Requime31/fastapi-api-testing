@@ -69,6 +69,21 @@ def test_login_email_case_insensitive(client):
         assert response.status_code == 200, email
 
 
+@pytest.mark.parametrize("payload", [
+    {"phone": None},
+    {},
+    {"phone": "+31612345678"},
+])
+def test_register_phone_optional(client, payload):
+    """FAT-15: an explicit null for the optional phone is the same as omitting it."""
+    response = client.post("/users/register", json={
+        "email": "phone@example.com",
+        "password": "123456",
+        **payload
+    })
+    assert response.status_code == 201
+
+
 def test_login(client):
     client.post("/users/register", json={
         "email": "test@example.com",
