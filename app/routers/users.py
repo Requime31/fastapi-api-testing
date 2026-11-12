@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from .. import schemas
 from ..database import get_db
 from ..services.user_service import UserService
-from ..auth.jwt_handler import decode_token, security
-from fastapi.security import HTTPAuthorizationCredentials
+from ..auth.jwt_handler import decode_token, get_bearer_token
 from ..limiter import limiter
 from ..config import settings
 
@@ -101,8 +100,8 @@ async def logout_all(
     request: Request,
     response: Response,
     db: Session = Depends(get_db),
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    token: str = Depends(get_bearer_token)
 ):
     """Invalidate all refresh tokens for the current user."""
-    payload = decode_token(credentials.credentials)
+    payload = decode_token(token)
     return UserService(db).logout_all(payload["user_id"], response)
