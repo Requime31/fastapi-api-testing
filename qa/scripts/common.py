@@ -1,5 +1,6 @@
 """Shared helpers for checklist run scripts (CL-02 … CL-04)."""
 import json
+import os
 import re
 import subprocess
 import time
@@ -12,7 +13,7 @@ BASE = "http://localhost:8000"
 PW = "Passw0rd!"
 RUN_ID = datetime.now().strftime("%m%d%H%M%S")
 OUT_DIR = Path(__file__).resolve().parents[1] / "runs"
-APP_BUILD = "660708b"
+APP_BUILD = os.environ.get("APP_BUILD", "660708b")  # build under test, e.g. APP_BUILD=v1.7.1
 
 client = httpx.Client(base_url=BASE, timeout=30)  # no cookie jar, no redirects
 results: dict[str, dict] = {}

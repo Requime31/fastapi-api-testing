@@ -15,6 +15,7 @@ Usage:
 import base64
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -805,7 +806,7 @@ def main():
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
     out.write_text(json.dumps({
         "checklist": "CL-01 Auth", "run_id": RUN_ID, "date": datetime.now(timezone.utc).isoformat(),
-        "environment": "Local (Docker), qa/docker-compose.functional.yml", "app_build": "660708b",
+        "environment": "Local (Docker), qa/docker-compose.functional.yml", "app_build": os.environ.get("APP_BUILD", "660708b"),
         "repo_commit": commit, "results": results,
     }, ensure_ascii=False, indent=2))
     counts = {}
