@@ -53,6 +53,22 @@ def test_register_password_min_length_boundary(client):
     assert response.status_code == 201
 
 
+def test_register_duplicate_email_different_case(client):
+    """FAT-9: the same address in another case is a duplicate."""
+    client.post("/users/register", json={"email": "Case@Example.com", "password": "123456"})
+    response = client.post("/users/register", json={"email": "CASE@EXAMPLE.COM", "password": "123456"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "User already exists"
+
+
+def test_login_email_case_insensitive(client):
+    """FAT-9: login works with the email in any case."""
+    client.post("/users/register", json={"email": "Case@Example.com", "password": "123456"})
+    for email in ("case@example.com", "CASE@EXAMPLE.COM", "Case@Example.com"):
+        response = client.post("/users/login", json={"email": email, "password": "123456"})
+        assert response.status_code == 200, email
+
+
 def test_login(client):
     client.post("/users/register", json={
         "email": "test@example.com",
