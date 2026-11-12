@@ -30,6 +30,29 @@ def test_register_invalid_email(client):
     assert response.status_code == 422
 
 
+import pytest
+
+
+@pytest.mark.parametrize("password", ["abc12", "", "      "])
+def test_register_rejects_weak_password(client, password):
+    """FAT-8: shorter than 6 characters, empty and whitespace-only passwords are rejected."""
+    response = client.post("/users/register", json={
+        "email": "weak@example.com",
+        "password": password
+    })
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["body", "password"]
+
+
+def test_register_password_min_length_boundary(client):
+    """FAT-8: exactly 6 characters is the lower boundary and is accepted."""
+    response = client.post("/users/register", json={
+        "email": "boundary@example.com",
+        "password": "abc123"
+    })
+    assert response.status_code == 201
+
+
 def test_login(client):
     client.post("/users/register", json={
         "email": "test@example.com",
