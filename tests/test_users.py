@@ -170,6 +170,27 @@ def test_logout_all_invalidates_all_tokens(client, auth_data):
     assert response.status_code == 401
 
 def test_access_protected_route_without_token(client):
+    """FAT-13: a missing Authorization header is 401 with WWW-Authenticate, not 403."""
     response = client.get("/items/")
-    assert response.status_code == 403
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Bearer"
+
+
+def test_logout_all_without_token(client):
+    """FAT-13: /users/logout-all documents 401 for missing credentials."""
+    response = client.post("/users/logout-all")
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Bearer"
+
+
+def test_non_bearer_scheme_is_401(client):
+    """FAT-13: a non-Bearer scheme is treated as missing credentials."""
+    response = client.get("/items/", headers={"Authorization": "Basic dXNlcjpwYXNz"})
+    assert response.status_code == 401
+
+
+def test_invalid_token_has_www_authenticate(client):
+    response = client.get("/items/", headers={"Authorization": "Bearer invalid"})
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Bearer"
 

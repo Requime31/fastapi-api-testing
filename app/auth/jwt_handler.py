@@ -33,7 +33,8 @@ def decode_token(token: str) -> dict:
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
 
@@ -52,15 +53,29 @@ def hash_token(token: str) -> str:
 
 # ───── Current User ─────
 
-security = HTTPBearer()
+# auto_error=False: HTTPBearer would answer a missing / non-Bearer header with 403;
+# a missing credential is an authentication error, so we return 401 ourselves (FAT-13).
+security = HTTPBearer(auto_error=False)
+
+
+def get_bearer_token(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+) -> str:
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return credentials.credentials
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    token: str = Depends(get_bearer_token),
     db: Session = Depends(get_db)
 ):
     from app import models
-    payload = decode_token(credentials.credentials)
+    payload = decode_token(token)
     user = db.query(models.User).filter(models.User.id == payload["user_id"]).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
